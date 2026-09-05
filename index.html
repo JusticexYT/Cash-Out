@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Withdrawal Tracker</title>
+  <title>Cash Out – Withdrawal Tracker</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,6 +27,9 @@
           </div>
         </div>
         <div class="header-actions">
+          <button id="exportBtn" class="icon-btn" title="Export CSV" aria-label="Export data">📤</button>
+          <button id="importBtn" class="icon-btn" title="Import CSV" aria-label="Import data">📥</button>
+          <input type="file" id="importFile" accept=".csv" hidden>
           <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle light/dark theme">
             <span class="theme-icon">🌙</span>
           </button>
@@ -56,40 +59,60 @@
       </section>
 
       <section class="side-panel">
-        <!-- Add / Edit form -->
         <div class="add-form card-glow">
           <div class="card-header">
             <span class="card-icon">📝</span>
             <h3 id="selectedDateTitle">Select a day</h3>
           </div>
+
           <div id="formArea" class="hidden">
+            <div id="dayEntries" class="day-entries"></div>
+
+            <div class="divider"><span>Add new</span></div>
+
             <div class="input-group">
               <label for="amount">Amount withdrawn</label>
               <div class="money-input">
                 <span class="currency">$</span>
                 <input type="number" id="amount" min="0.01" step="0.01" placeholder="0.00">
               </div>
+              <div class="quick-amounts">
+                <button type="button" class="quick-btn" data-amount="20">$20</button>
+                <button type="button" class="quick-btn" data-amount="40">$40</button>
+                <button type="button" class="quick-btn" data-amount="60">$60</button>
+                <button type="button" class="quick-btn" data-amount="100">$100</button>
+                <button type="button" class="quick-btn" data-amount="200">$200</button>
+              </div>
             </div>
+
+            <div class="input-group">
+              <label>Category</label>
+              <div class="category-pills">
+                <button type="button" class="cat-pill active" data-cat="ATM">🏧 ATM</button>
+                <button type="button" class="cat-pill" data-cat="Cashback">💳 Cashback</button>
+                <button type="button" class="cat-pill" data-cat="Bank">🏦 Bank</button>
+                <button type="button" class="cat-pill" data-cat="Other">📦 Other</button>
+              </div>
+            </div>
+
             <div class="input-group">
               <label for="note">Note <span class="optional">(optional)</span></label>
-              <input type="text" id="note" placeholder="ATM, groceries, cash...">
+              <input type="text" id="note" placeholder="e.g. groceries, weekend cash...">
             </div>
+
             <div class="form-buttons">
               <button id="saveBtn" class="btn primary">
-                <span>💾</span> Save
-              </button>
-              <button id="deleteBtn" class="btn danger hidden">
-                <span>🗑️</span> Delete
+                <span>💾</span> Add Withdrawal
               </button>
             </div>
           </div>
+
           <p id="noSelection" class="hint">
             <span class="hint-icon">👆</span>
-            Click any day on the calendar to add or edit a withdrawal
+            Click any day on the calendar to add or view withdrawals
           </p>
         </div>
 
-        <!-- Month summary -->
         <div class="summary card-glow">
           <div class="card-header">
             <span class="card-icon">📊</span>
@@ -105,12 +128,12 @@
               <div class="stat-value" id="monthCount">0</div>
             </div>
           </div>
+          <div class="category-breakdown" id="categoryBreakdown"></div>
           <div class="progress-wrap">
             <div class="progress-bar" id="progressBar"></div>
           </div>
         </div>
 
-        <!-- Entries list -->
         <div class="list card-glow">
           <div class="card-header">
             <span class="card-icon">📋</span>
@@ -126,7 +149,7 @@
     </main>
 
     <footer>
-      <p>Data stays on your device · Never shared</p>
+      <p>Data stays on your device · Never shared · Export anytime</p>
     </footer>
   </div>
 

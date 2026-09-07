@@ -1,158 +1,427 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cash Out – Withdrawal Tracker</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdrawal ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #F5F1E7;
+    --paper-line: #DBD4C0;
+    --ink: #24304A;
+    --ink-soft: #5B6479;
+    --rust: #9C4331;
+    --rust-soft: #C98B78;
+    --brass: #A9822F;
+    --card: #FBF9F4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--ink);
+    min-height:100vh;
+    padding:40px 20px 80px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+    gap:16px;
+  }
+  h1{
+    font-family:'Source Serif 4', serif;
+    font-weight:600;
+    font-size:28px;
+    margin:0;
+    letter-spacing:0.2px;
+  }
+  h1 span{color:var(--rust);}
+  .month-total{
+    text-align:right;
+  }
+  .month-total .label{
+    font-size:11px;
+    color:var(--ink-soft);
+    letter-spacing:0.5px;
+  }
+  .month-total .value{
+    font-size:24px;
+    font-weight:500;
+    color:var(--rust);
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .nav button{
+    background:none;
+    border:1px solid var(--ink);
+    color:var(--ink);
+    font-family:inherit;
+    font-size:16px;
+    width:34px;
+    height:34px;
+    cursor:pointer;
+  }
+  .nav button:hover{background:var(--ink);color:var(--paper);}
+  .nav .month-label{
+    font-family:'Source Serif 4', serif;
+    font-size:19px;
+    font-weight:600;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    border-top:1px solid var(--paper-line);
+    border-left:1px solid var(--paper-line);
+  }
+  .dow{
+    font-size:11px;
+    text-align:center;
+    padding:8px 0;
+    color:var(--ink-soft);
+    letter-spacing:0.5px;
+    border-right:1px solid var(--paper-line);
+    border-bottom:1px solid var(--paper-line);
+  }
+  .cell{
+    min-height:78px;
+    border-right:1px solid var(--paper-line);
+    border-bottom:1px solid var(--paper-line);
+    padding:8px 6px;
+    cursor:pointer;
+    background:var(--card);
+    position:relative;
+    transition:background 0.12s ease;
+  }
+  .cell:hover{background:#F0EADA;}
+  .cell.empty{background:transparent;cursor:default;}
+  .cell.selected{outline:2px solid var(--ink);outline-offset:-2px;}
+  .cell .daynum{
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .cell.has-entry .daynum{color:var(--ink);font-weight:500;}
+  .cell .amount{
+    margin-top:10px;
+    font-size:14px;
+    font-weight:500;
+    color:var(--rust);
+  }
+  .cell.today .daynum{
+    color:var(--brass);
+    font-weight:600;
+  }
+  .panel{
+    margin-top:24px;
+    border:1px solid var(--ink);
+    background:var(--card);
+    padding:20px 22px;
+  }
+  .panel .date-title{
+    font-family:'Source Serif 4', serif;
+    font-size:18px;
+    font-weight:600;
+    margin:0 0 14px;
+  }
+  .panel-row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .panel-row label{
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .panel input[type=number]{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:16px;
+    border:1px solid var(--ink-soft);
+    background:#fff;
+    padding:8px 10px;
+    width:140px;
+  }
+  .panel input[type=text]{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    border:1px solid var(--ink-soft);
+    background:#fff;
+    padding:8px 10px;
+    flex:1;
+    min-width:160px;
+  }
+  .panel button{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:var(--paper);
+    padding:9px 16px;
+    cursor:pointer;
+  }
+  .panel button.secondary{
+    background:none;
+    color:var(--rust);
+    border:1px solid var(--rust-soft);
+  }
+  .panel button:hover{opacity:0.85;}
+  .panel .note-row{margin-top:12px;}
+  .panel .actions{margin-top:16px;display:flex;gap:10px;}
+  .empty-hint{
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .list{
+    margin-top:34px;
+  }
+  .list h2{
+    font-family:'Source Serif 4', serif;
+    font-size:16px;
+    font-weight:600;
+    border-bottom:1px solid var(--paper-line);
+    padding-bottom:8px;
+    margin-bottom:4px;
+  }
+  .list-row{
+    display:flex;
+    justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px solid var(--paper-line);
+    font-size:13px;
+  }
+  .list-row .d{color:var(--ink-soft);}
+  .list-row .n{color:var(--ink);}
+  .list-row .a{color:var(--rust);font-weight:500;}
+  .status{
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-top:6px;
+    min-height:14px;
+  }
+</style>
 </head>
 <body>
-  <div class="bg-shapes">
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
+<div class="wrap">
+  <header>
+    <h1>Withdrawal <span>ledger</span></h1>
+    <div class="month-total">
+      <div class="label">taken out this month</div>
+      <div class="value" id="monthTotal">$0.00</div>
+    </div>
+  </header>
+
+  <div class="nav">
+    <button id="prevMonth" aria-label="Previous month">&lsaquo;</button>
+    <div class="month-label" id="monthLabel"></div>
+    <button id="nextMonth" aria-label="Next month">&rsaquo;</button>
   </div>
 
-  <div class="app">
-    <header>
-      <div class="header-top">
-        <div class="logo">
-          <div class="logo-icon">💵</div>
-          <div>
-            <h1>Cash Out</h1>
-            <p class="subtitle">Track every withdrawal</p>
-          </div>
-        </div>
-        <div class="header-actions">
-          <button id="exportBtn" class="icon-btn" title="Export CSV" aria-label="Export data">📤</button>
-          <button id="importBtn" class="icon-btn" title="Import CSV" aria-label="Import data">📥</button>
-          <input type="file" id="importFile" accept=".csv" hidden>
-          <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-label="Toggle light/dark theme">
-            <span class="theme-icon">🌙</span>
-          </button>
-        </div>
-      </div>
-    </header>
+  <div class="grid" id="dowRow"></div>
+  <div class="grid" id="calGrid"></div>
 
-    <main>
-      <section class="calendar-section card-glow">
-        <div class="calendar-header">
-          <button id="prevMonth" class="nav-btn" aria-label="Previous month">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <h2 id="monthYear"></h2>
-          <button id="nextMonth" class="nav-btn" aria-label="Next month">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </button>
-        </div>
-        <div class="weekdays">
-          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-        </div>
-        <div id="calendarDays" class="days"></div>
-        <div class="calendar-legend">
-          <span><i class="dot today-dot"></i> Today</span>
-          <span><i class="dot entry-dot"></i> Has withdrawal</span>
-        </div>
-      </section>
-
-      <section class="side-panel">
-        <div class="add-form card-glow">
-          <div class="card-header">
-            <span class="card-icon">📝</span>
-            <h3 id="selectedDateTitle">Select a day</h3>
-          </div>
-
-          <div id="formArea" class="hidden">
-            <div id="dayEntries" class="day-entries"></div>
-
-            <div class="divider"><span>Add new</span></div>
-
-            <div class="input-group">
-              <label for="amount">Amount withdrawn</label>
-              <div class="money-input">
-                <span class="currency">$</span>
-                <input type="number" id="amount" min="0.01" step="0.01" placeholder="0.00">
-              </div>
-              <div class="quick-amounts">
-                <button type="button" class="quick-btn" data-amount="20">$20</button>
-                <button type="button" class="quick-btn" data-amount="40">$40</button>
-                <button type="button" class="quick-btn" data-amount="60">$60</button>
-                <button type="button" class="quick-btn" data-amount="100">$100</button>
-                <button type="button" class="quick-btn" data-amount="200">$200</button>
-              </div>
-            </div>
-
-            <div class="input-group">
-              <label>Category</label>
-              <div class="category-pills">
-                <button type="button" class="cat-pill active" data-cat="ATM">🏧 ATM</button>
-                <button type="button" class="cat-pill" data-cat="Cashback">💳 Cashback</button>
-                <button type="button" class="cat-pill" data-cat="Bank">🏦 Bank</button>
-                <button type="button" class="cat-pill" data-cat="Other">📦 Other</button>
-              </div>
-            </div>
-
-            <div class="input-group">
-              <label for="note">Note <span class="optional">(optional)</span></label>
-              <input type="text" id="note" placeholder="e.g. groceries, weekend cash...">
-            </div>
-
-            <div class="form-buttons">
-              <button id="saveBtn" class="btn primary">
-                <span>💾</span> Add Withdrawal
-              </button>
-            </div>
-          </div>
-
-          <p id="noSelection" class="hint">
-            <span class="hint-icon">👆</span>
-            Click any day on the calendar to add or view withdrawals
-          </p>
-        </div>
-
-        <div class="summary card-glow">
-          <div class="card-header">
-            <span class="card-icon">📊</span>
-            <h3>This Month</h3>
-          </div>
-          <div class="summary-grid">
-            <div class="stat">
-              <div class="stat-label">Total withdrawn</div>
-              <div class="stat-value money" id="monthTotal">$0.00</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Withdrawals</div>
-              <div class="stat-value" id="monthCount">0</div>
-            </div>
-          </div>
-          <div class="category-breakdown" id="categoryBreakdown"></div>
-          <div class="progress-wrap">
-            <div class="progress-bar" id="progressBar"></div>
-          </div>
-        </div>
-
-        <div class="list card-glow">
-          <div class="card-header">
-            <span class="card-icon">📋</span>
-            <h3>All Entries</h3>
-          </div>
-          <ul id="entriesList"></ul>
-          <p id="emptyList" class="hint">
-            <span class="hint-icon">✨</span>
-            No withdrawals yet — start tracking!
-          </p>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <p>Data stays on your device · Never shared · Export anytime</p>
-    </footer>
+  <div class="panel" id="panel" style="display:none;">
+    <p class="date-title" id="panelDate"></p>
+    <div class="panel-row">
+      <label for="amountInput">Amount ($)</label>
+      <input type="number" id="amountInput" step="0.01" min="0" placeholder="0.00">
+      <button id="saveBtn">Save</button>
+      <button id="deleteBtn" class="secondary" style="display:none;">Delete entry</button>
+    </div>
+    <div class="panel-row note-row">
+      <label for="noteInput">Note</label>
+      <input type="text" id="noteInput" placeholder="e.g. groceries, cash for weekend">
+    </div>
+    <div class="status" id="status"></div>
   </div>
 
-  <script src="app.js"></script>
+  <div class="list">
+    <h2>This month's withdrawals</h2>
+    <div id="listBody"><p class="empty-hint">Nothing logged yet. Click a day above to add one.</p></div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'withdrawals';
+let data = {};
+let current = new Date();
+current.setDate(1);
+let selectedDate = null;
+
+const monthLabel = document.getElementById('monthLabel');
+const calGrid = document.getElementById('calGrid');
+const dowRow = document.getElementById('dowRow');
+const panel = document.getElementById('panel');
+const panelDate = document.getElementById('panelDate');
+const amountInput = document.getElementById('amountInput');
+const noteInput = document.getElementById('noteInput');
+const saveBtn = document.getElementById('saveBtn');
+const deleteBtn = document.getElementById('deleteBtn');
+const statusEl = document.getElementById('status');
+const monthTotalEl = document.getElementById('monthTotal');
+const listBody = document.getElementById('listBody');
+
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+DOW.forEach(d => {
+  const el = document.createElement('div');
+  el.className = 'dow';
+  el.textContent = d;
+  dowRow.appendChild(el);
+});
+
+function fmtKey(y,m,d){
+  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+function fmtMoney(n){
+  return '$' + Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+async function loadData(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    data = res && res.value ? JSON.parse(res.value) : {};
+  }catch(e){
+    data = {};
+  }
+  render();
+}
+
+async function persist(){
+  try{
+    await window.storage.set(STORAGE_KEY, JSON.stringify(data), false);
+  }catch(e){
+    statusEl.textContent = 'Could not save. Try again.';
+  }
+}
+
+function render(){
+  const y = current.getFullYear();
+  const m = current.getMonth();
+  monthLabel.textContent = current.toLocaleString(undefined,{month:'long', year:'numeric'});
+
+  calGrid.innerHTML = '';
+  const firstDow = new Date(y,m,1).getDay();
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const todayKey = fmtKey(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+  for(let i=0;i<firstDow;i++){
+    const cell = document.createElement('div');
+    cell.className = 'cell empty';
+    calGrid.appendChild(cell);
+  }
+
+  let monthTotal = 0;
+  const entries = [];
+
+  for(let d=1; d<=daysInMonth; d++){
+    const key = fmtKey(y,m,d);
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    if(key === todayKey) cell.classList.add('today');
+    if(data[key]) cell.classList.add('has-entry');
+    if(key === selectedDate) cell.classList.add('selected');
+
+    const daynum = document.createElement('div');
+    daynum.className = 'daynum';
+    daynum.textContent = d;
+    cell.appendChild(daynum);
+
+    if(data[key]){
+      const amt = document.createElement('div');
+      amt.className = 'amount';
+      amt.textContent = fmtMoney(data[key].amount);
+      cell.appendChild(amt);
+      monthTotal += Number(data[key].amount);
+      entries.push({key, ...data[key]});
+    }
+
+    cell.addEventListener('click', () => openPanel(key));
+    calGrid.appendChild(cell);
+  }
+
+  monthTotalEl.textContent = fmtMoney(monthTotal);
+
+  entries.sort((a,b) => a.key < b.key ? 1 : -1);
+  if(entries.length === 0){
+    listBody.innerHTML = '<p class="empty-hint">Nothing logged yet. Click a day above to add one.</p>';
+  }else{
+    listBody.innerHTML = '';
+    entries.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      const dateObj = new Date(e.key + 'T00:00:00');
+      const dLabel = dateObj.toLocaleDateString(undefined,{month:'short', day:'numeric'});
+      row.innerHTML = `<span class="d">${dLabel}</span><span class="n">${e.note ? e.note : ''}</span><span class="a">${fmtMoney(e.amount)}</span>`;
+      listBody.appendChild(row);
+    });
+  }
+}
+
+function openPanel(key){
+  selectedDate = key;
+  panel.style.display = 'block';
+  const dateObj = new Date(key + 'T00:00:00');
+  panelDate.textContent = dateObj.toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  statusEl.textContent = '';
+  if(data[key]){
+    amountInput.value = data[key].amount;
+    noteInput.value = data[key].note || '';
+    deleteBtn.style.display = 'inline-block';
+  }else{
+    amountInput.value = '';
+    noteInput.value = '';
+    deleteBtn.style.display = 'none';
+  }
+  render();
+  amountInput.focus();
+}
+
+saveBtn.addEventListener('click', async () => {
+  const val = parseFloat(amountInput.value);
+  if(isNaN(val) || val <= 0){
+    statusEl.textContent = 'Enter an amount greater than 0.';
+    return;
+  }
+  data[selectedDate] = { amount: val, note: noteInput.value.trim() };
+  await persist();
+  statusEl.textContent = 'Saved.';
+  deleteBtn.style.display = 'inline-block';
+  render();
+});
+
+deleteBtn.addEventListener('click', async () => {
+  delete data[selectedDate];
+  await persist();
+  panel.style.display = 'none';
+  selectedDate = null;
+  render();
+});
+
+document.getElementById('prevMonth').addEventListener('click', () => {
+  current.setMonth(current.getMonth() - 1);
+  panel.style.display = 'none';
+  selectedDate = null;
+  render();
+});
+document.getElementById('nextMonth').addEventListener('click', () => {
+  current.setMonth(current.getMonth() + 1);
+  panel.style.display = 'none';
+  selectedDate = null;
+  render();
+});
+
+loadData();
+</script>
 </body>
 </html>

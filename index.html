@@ -273,6 +273,7 @@
       </div>
     </div>
   </header>
+  <div id="saveIndicator" style="font-size:11px;color:var(--ink-soft);margin:-10px 0 18px;text-align:right;">All changes save automatically.</div>
 
   <div class="banner hide" id="reminderBanner">
     <span id="reminderText"></span>
@@ -485,10 +486,29 @@ async function loadData(){
 async function persist(){
   try{
     await window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
+    const ind = el('saveIndicator');
+    if(ind){
+      const now = new Date();
+      ind.textContent = 'Saved at ' + now.toLocaleTimeString(undefined,{hour:'2-digit', minute:'2-digit'});
+    }
   }catch(e){
     statusEl.textContent = 'Could not save. Try again.';
+    const ind = el('saveIndicator');
+    if(ind) ind.textContent = 'Could not save your last change.';
   }
 }
+
+function persistBeacon(){
+  try{
+    window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
+  }catch(e){
+    // best-effort only, nothing more to do on unload
+  }
+}
+window.addEventListener('beforeunload', persistBeacon);
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden') persistBeacon();
+});
 
 function applyTheme(){
   document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');

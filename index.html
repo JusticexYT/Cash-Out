@@ -84,17 +84,6 @@
   }
   .icon-toggle:hover{background:var(--ink);color:var(--paper);}
 
-  .toolbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-bottom:14px;
-  }
-  .toolbar .group{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-  .toolbar label{font-size:11px;color:var(--ink-soft);}
-
   .banner{
     border:1px solid var(--brass);
     background:var(--card);
@@ -163,7 +152,6 @@
   .cell.has-entry .daynum{color:var(--ink);font-weight:500;}
   .cat-dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
   .cell .amount{margin-top:10px;font-size:14px;font-weight:500;color:var(--rust);}
-  .cell .rec-icon{font-size:10px;color:var(--brass);}
   .cell.today .daynum{color:var(--brass);font-weight:600;}
 
   .panel{margin-top:24px;border:1px solid var(--ink);background:var(--card);padding:20px 22px;}
@@ -255,25 +243,39 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>Withdrawal <span>ledger</span></h1>
+    <h1><span id="titleMain">Withdrawal</span> <span id="titleAccent">ledger</span></h1>
     <div class="header-right">
-      <select id="accountSelect"></select>
-      <button class="icon-toggle" id="addAccountBtn" title="Add account">+ account</button>
-      <select id="currencySelect">
-        <option value="$">$</option>
-        <option value="€">€</option>
-        <option value="£">£</option>
-        <option value="¥">¥</option>
-        <option value="₹">₹</option>
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="nl">Nederlands</option>
+        <option value="pap">Papiamento</option>
       </select>
-      <button class="icon-toggle" id="darkToggle" title="Toggle dark mode">◐</button>
+      <select id="accountSelect"></select>
+      <button class="icon-toggle" id="addAccountBtn">+ account</button>
+      <select id="currencySelect">
+        <option value="$">$ (USD)</option>
+        <option value="€">€ (EUR)</option>
+        <option value="£">£ (GBP)</option>
+        <option value="¥">¥ (JPY)</option>
+        <option value="₹">₹ (INR)</option>
+        <option value="Afl. ">Afl. (Aruban florin)</option>
+        <option value="ƒ">ƒ (Neth. Antillean guilder)</option>
+        <option value="CA$">CA$ (Canadian dollar)</option>
+        <option value="Mex$">Mex$ (Mexican peso)</option>
+        <option value="R$">R$ (Brazilian real)</option>
+        <option value="Fr. ">Fr. (Swiss franc)</option>
+        <option value="A$">A$ (Australian dollar)</option>
+        <option value="Bs. ">Bs. (Venezuelan bolívar)</option>
+      </select>
+      <button class="icon-toggle" id="darkToggle">◐</button>
       <div class="month-total">
-        <div class="label">taken out this month</div>
+        <div class="label" id="monthTotalLabel">taken out this month</div>
         <div class="value" id="monthTotal">$0.00</div>
       </div>
     </div>
   </header>
-  <div id="saveIndicator" style="font-size:11px;color:var(--ink-soft);margin:-10px 0 18px;text-align:right;">All changes save automatically.</div>
+  <div id="saveIndicator" style="font-size:11px;color:var(--ink-soft);margin:-10px 0 18px;text-align:right;"></div>
 
   <div class="banner hide" id="reminderBanner">
     <span id="reminderText"></span>
@@ -282,8 +284,8 @@
 
   <div class="budget-box">
     <div class="row">
-      <span>Monthly budget limit</span>
-      <input type="number" id="budgetInput" min="0" step="1" placeholder="e.g. 400">
+      <span id="budgetLabelText">Monthly budget limit</span>
+      <input type="number" id="budgetInput" min="0" step="1">
     </div>
     <div class="bar-track"><div class="bar-fill" id="budgetFill" style="width:0%"></div></div>
     <div class="row" style="margin-top:6px;margin-bottom:0;">
@@ -309,17 +311,17 @@
     <div class="panel" id="panel" style="display:none;">
       <p class="date-title" id="panelDate"></p>
       <div class="panel-row">
-        <label for="amountInput">Amount</label>
+        <label for="amountInput" id="amountLabelText">Amount</label>
         <input type="number" id="amountInput" step="0.01" min="0" placeholder="0.00">
-        <label for="categorySelect">Category</label>
+        <label for="categorySelect" id="categoryLabelText">Category</label>
         <select id="categorySelect"></select>
       </div>
       <div class="panel-row">
-        <label for="noteInput">Note</label>
-        <input type="text" id="noteInput" placeholder="e.g. groceries, cash for weekend">
+        <label for="noteInput" id="noteLabelText">Note</label>
+        <input type="text" id="noteInput">
       </div>
       <div class="panel-row">
-        <span class="checkbox-row"><input type="checkbox" id="recurringCheck"> Repeats monthly (auto-fills future months)</span>
+        <span class="checkbox-row"><input type="checkbox" id="recurringCheck"> <span id="recurringLabelText">Repeats monthly (auto-fills future months)</span></span>
       </div>
       <div class="actions">
         <button class="primary" id="saveBtn">Save</button>
@@ -334,7 +336,7 @@
   </div>
 
   <div class="search-row">
-    <input type="text" id="searchInput" placeholder="Search notes or category...">
+    <input type="text" id="searchInput">
     <select id="sortSelect">
       <option value="date-desc">Newest first</option>
       <option value="date-asc">Oldest first</option>
@@ -344,32 +346,32 @@
   </div>
 
   <div class="list">
-    <h2>This month's withdrawals</h2>
+    <h2 id="listHeaderText">This month's withdrawals</h2>
     <div id="listBody"></div>
   </div>
 
-  <div class="section-title">Spending by month</div>
+  <div class="section-title" id="spendingByMonthTitle">Spending by month</div>
   <div class="chart-box">
     <canvas id="monthChart" height="140"></canvas>
   </div>
 
-  <div class="section-title">By category</div>
+  <div class="section-title" id="byCategoryTitle">By category</div>
   <div class="chart-box" id="catBreakdown"></div>
 
-  <div class="section-title">Stats</div>
+  <div class="section-title" id="statsTitleText">Stats</div>
   <div class="stats-grid" id="statsGrid"></div>
 
-  <div class="section-title">Your data</div>
+  <div class="section-title" id="yourDataTitle">Your data</div>
   <div class="data-box">
     <button id="exportCsvBtn">Export CSV</button>
     <button id="backupBtn">Download backup (JSON)</button>
-    <label class="filebtn">Restore from backup
+    <label class="filebtn"><span id="restoreLabelText">Restore from backup</span>
       <input type="file" id="restoreInput" accept="application/json">
     </label>
   </div>
   <div class="import-box">
-    <label style="font-size:12px;color:var(--ink-soft);">Paste past withdrawals to import — one per line, format: <code>YYYY-MM-DD, amount, category, note</code></label>
-    <textarea id="pasteImport" placeholder="2026-08-03, 60, Groceries, weekly shop"></textarea>
+    <label style="font-size:12px;color:var(--ink-soft);" id="importLabelText"></label>
+    <textarea id="pasteImport"></textarea>
     <div class="data-box" style="margin-top:8px;">
       <button id="pasteImportBtn">Import pasted lines</button>
     </div>
@@ -384,18 +386,169 @@
 
 <script>
 const STORAGE_KEY = 'ledger-data-v1';
-const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const DEFAULT_CATEGORIES = ['Groceries','Bills','Fun','Gifts','Transport','Other'];
 const CAT_COLORS = {
   'Groceries':'#639922','Bills':'#378ADD','Fun':'#D4537E','Gifts':'#EF9F27',
   'Transport':'#7F77DD','Other':'#888780'
 };
 
+const DOW_SHORT = {
+  en: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+  es: ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],
+  nl: ['Zo','Ma','Di','Wo','Do','Vr','Za'],
+  pap: ['Dgu','Lun','Mar','Ras','Wep','Bie','Sab']
+};
+const DOW_FULL = {
+  en: ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+  es: ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],
+  nl: ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'],
+  pap: ['diadomingu','dialuna','diamars','diarason','diahuebs','diabièrnè','diasabra']
+};
+const MONTHS_FULL = {
+  en: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+  es: ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'],
+  nl: ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'],
+  pap: ['januari','febrüari','maart','aprel','mei','juni','juli','ougùstùs','sèptèmber','òktober','novèmber','desèmber']
+};
+
+const TRANSLATIONS = {
+  en: {
+    titleMain:'Withdrawal', titleAccent:'ledger', monthTotalLabel:'taken out this month',
+    saveAuto:'All changes save automatically.', savedAt:t=>`Saved at ${t}`, saveError:'Could not save your last change.',
+    addAccount:'+ account', addAccountPrompt:'Name this account (e.g. Savings, Joint):',
+    darkToggleTitle:'Toggle dark mode', budgetLabel:'Monthly budget limit',
+    noBudget:'No budget set for this account.', overBudget:'Over budget', onTrack:'On track', left:'left',
+    yearView:'Year view', amountLabel:'Amount', categoryLabel:'Category', noteLabel:'Note',
+    notePlaceholder:'e.g. groceries, cash for weekend', recurringLabel:'Repeats monthly (auto-fills future months)',
+    save:'Save', deleteEntry:'Delete entry', enterAmount:'Enter an amount greater than 0.', saved:'Saved.',
+    searchPlaceholder:'Search notes or category...', sortNewest:'Newest first', sortOldest:'Oldest first',
+    sortLargest:'Largest amount', sortSmallest:'Smallest amount', listHeader:"This month's withdrawals",
+    emptyHint:'Nothing logged yet. Click a day above to add one.', spendingByMonth:'Spending by month',
+    byCategory:'By category', noCategoryData:'No withdrawals yet this month.', statsTitle:'Stats',
+    statsEmpty:'Stats will show up once you log a few withdrawals.', statAvg:'Average withdrawal',
+    statTotalCount:'Total withdrawals logged', statBiggest:'Biggest withdrawal', statActiveMonth:'Most active month',
+    statCommonDay:'Most common day', statAllTime:'All-time total', yourData:'Your data', exportCsv:'Export CSV',
+    downloadBackup:'Download backup (JSON)', restoreBackup:'Restore from backup',
+    importLabel:'Paste past withdrawals to import — one per line, format: YYYY-MM-DD, amount, category, note',
+    importPlaceholder:'2026-08-03, 60, Groceries, weekly shop', importBtn:'Import pasted lines',
+    importFail:'No valid lines found. Use format: YYYY-MM-DD, amount, category, note',
+    backupRestored:'Backup restored.', backupInvalid:'That file could not be read as a valid backup.',
+    undoRemoved:'Entry removed.', undo:'Undo', dismiss:'dismiss'
+  },
+  es: {
+    titleMain:'Registro de', titleAccent:'retiros', monthTotalLabel:'retirado este mes',
+    saveAuto:'Todos los cambios se guardan automáticamente.', savedAt:t=>`Guardado a las ${t}`,
+    saveError:'No se pudo guardar tu último cambio.', addAccount:'+ cuenta',
+    addAccountPrompt:'Nombra esta cuenta (ej. Ahorros, Conjunta):', darkToggleTitle:'Cambiar modo oscuro',
+    budgetLabel:'Límite de presupuesto mensual', noBudget:'No hay presupuesto establecido para esta cuenta.',
+    overBudget:'Presupuesto excedido', onTrack:'Dentro del presupuesto', left:'restante', yearView:'Vista anual',
+    amountLabel:'Monto', categoryLabel:'Categoría', noteLabel:'Nota',
+    notePlaceholder:'ej. comestibles, efectivo para el fin de semana',
+    recurringLabel:'Se repite mensualmente (rellena meses futuros)', save:'Guardar', deleteEntry:'Eliminar entrada',
+    enterAmount:'Ingresa un monto mayor que 0.', saved:'Guardado.', searchPlaceholder:'Buscar notas o categoría...',
+    sortNewest:'Más reciente primero', sortOldest:'Más antiguo primero', sortLargest:'Monto más alto',
+    sortSmallest:'Monto más bajo', listHeader:'Retiros de este mes',
+    emptyHint:'Nada registrado todavía. Haz clic en un día arriba para agregar uno.',
+    spendingByMonth:'Gasto por mes', byCategory:'Por categoría', noCategoryData:'Aún no hay retiros este mes.',
+    statsTitle:'Estadísticas', statsEmpty:'Las estadísticas aparecerán cuando registres algunos retiros.',
+    statAvg:'Retiro promedio', statTotalCount:'Total de retiros registrados', statBiggest:'Retiro más grande',
+    statActiveMonth:'Mes más activo', statCommonDay:'Día más común', statAllTime:'Total histórico',
+    yourData:'Tus datos', exportCsv:'Exportar CSV', downloadBackup:'Descargar copia de seguridad (JSON)',
+    restoreBackup:'Restaurar copia de seguridad',
+    importLabel:'Pega retiros anteriores para importar — uno por línea, formato: AAAA-MM-DD, monto, categoría, nota',
+    importPlaceholder:'2026-08-03, 60, Comestibles, compra semanal', importBtn:'Importar líneas pegadas',
+    importFail:'No se encontraron líneas válidas. Usa el formato: AAAA-MM-DD, monto, categoría, nota',
+    backupRestored:'Copia de seguridad restaurada.',
+    backupInvalid:'Ese archivo no se pudo leer como una copia de seguridad válida.',
+    undoRemoved:'Entrada eliminada.', undo:'Deshacer', dismiss:'descartar'
+  },
+  nl: {
+    titleMain:'Opname', titleAccent:'boek', monthTotalLabel:'opgenomen deze maand',
+    saveAuto:'Alle wijzigingen worden automatisch opgeslagen.', savedAt:t=>`Opgeslagen om ${t}`,
+    saveError:'Kon je laatste wijziging niet opslaan.', addAccount:'+ rekening',
+    addAccountPrompt:'Geef deze rekening een naam (bijv. Spaarrekening, Gezamenlijk):',
+    darkToggleTitle:'Donkere modus wisselen', budgetLabel:'Maandelijks budgetlimiet',
+    noBudget:'Geen budget ingesteld voor deze rekening.', overBudget:'Budget overschreden', onTrack:'Op schema',
+    left:'over', yearView:'Jaaroverzicht', amountLabel:'Bedrag', categoryLabel:'Categorie', noteLabel:'Notitie',
+    notePlaceholder:'bijv. boodschappen, contant geld voor het weekend',
+    recurringLabel:'Herhaalt maandelijks (vult toekomstige maanden automatisch in)', save:'Opslaan',
+    deleteEntry:'Item verwijderen', enterAmount:'Voer een bedrag groter dan 0 in.', saved:'Opgeslagen.',
+    searchPlaceholder:'Zoek in notities of categorie...', sortNewest:'Nieuwste eerst', sortOldest:'Oudste eerst',
+    sortLargest:'Grootste bedrag', sortSmallest:'Kleinste bedrag', listHeader:'Opnames deze maand',
+    emptyHint:'Nog niets vastgelegd. Klik hierboven op een dag om er een toe te voegen.',
+    spendingByMonth:'Uitgaven per maand', byCategory:'Per categorie', noCategoryData:'Nog geen opnames deze maand.',
+    statsTitle:'Statistieken', statsEmpty:'Statistieken verschijnen zodra je een paar opnames hebt vastgelegd.',
+    statAvg:'Gemiddelde opname', statTotalCount:'Totaal aantal opnames', statBiggest:'Grootste opname',
+    statActiveMonth:'Drukste maand', statCommonDay:'Meest voorkomende dag', statAllTime:'Totaal aller tijden',
+    yourData:'Jouw gegevens', exportCsv:'CSV exporteren', downloadBackup:'Back-up downloaden (JSON)',
+    restoreBackup:'Back-up herstellen',
+    importLabel:'Plak eerdere opnames om te importeren — één per regel, formaat: JJJJ-MM-DD, bedrag, categorie, notitie',
+    importPlaceholder:'2026-08-03, 60, Boodschappen, wekelijkse boodschappen', importBtn:'Geplakte regels importeren',
+    importFail:'Geen geldige regels gevonden. Gebruik het formaat: JJJJ-MM-DD, bedrag, categorie, notitie',
+    backupRestored:'Back-up hersteld.', backupInvalid:'Dat bestand kon niet worden gelezen als een geldige back-up.',
+    undoRemoved:'Item verwijderd.', undo:'Ongedaan maken', dismiss:'sluiten'
+  },
+  pap: {
+    titleMain:'Buki di', titleAccent:'retiro', monthTotalLabel:'a saká e luna aki',
+    saveAuto:'Tur cambio ta wordo warda automáticamente.', savedAt:t=>`Wardá na ${t}`,
+    saveError:'No por a warda bo último cambio.', addAccount:'+ kuenta',
+    addAccountPrompt:'Duna e kuenta aki un nomber (pf. Spaar, Kombiná):', darkToggleTitle:'Kambia modo skur',
+    budgetLabel:'Límite di presupuesto mensual', noBudget:'No tin presupuesto pone pa e kuenta aki.',
+    overBudget:'Riba presupuesto', onTrack:'Bon encaminá', left:'resta', yearView:'Bista di aña',
+    amountLabel:'Suma', categoryLabel:'Categoria', noteLabel:'Nota',
+    notePlaceholder:'pf. compra, placa pa fin di siman',
+    recurringLabel:'Ta repití mensualmente (yena lunanan futuro automáticamente)', save:'Warda',
+    deleteEntry:'Kita entrada', enterAmount:'Duna un suma mas grandi ku 0.', saved:'Wardá.',
+    searchPlaceholder:'Buska nota òf categoria...', sortNewest:'Mas resien promé', sortOldest:'Mas bieu promé',
+    sortLargest:'Suma mas grandi', sortSmallest:'Suma mas chikí', listHeader:'Retiro di e luna aki',
+    emptyHint:'Nada registrá ainda. Click riba un dia ariba pa agrega un.', spendingByMonth:'Gasto pa luna',
+    byCategory:'Pa categoria', noCategoryData:'Ainda no tin retiro e luna aki.', statsTitle:'Estadística',
+    statsEmpty:'Estadística lo aparesé asina bo registrá algun retiro.', statAvg:'Retiro promedio',
+    statTotalCount:'Total di retiro registrá', statBiggest:'Retiro mas grandi', statActiveMonth:'Luna mas activo',
+    statCommonDay:'Dia mas komun', statAllTime:'Total di tur tempu', yourData:'Bo data', exportCsv:'Exportá CSV',
+    downloadBackup:'Download backup (JSON)', restoreBackup:'Restora backup',
+    importLabel:'Pega retiro di antes pa importá — un pa lini, formato: AAAA-MM-DD, suma, categoria, nota',
+    importPlaceholder:'2026-08-03, 60, Compra, compra semanal', importBtn:'Importá liña pegá',
+    importFail:'No a haña liña válido. Usa e formato: AAAA-MM-DD, suma, categoria, nota',
+    backupRestored:'Backup restorá.', backupInvalid:'E ficha ei no por a wordo lesá komo un backup válido.',
+    undoRemoved:'Entrada kitá.', undo:'Deshasé', dismiss:'sera'
+  }
+};
+
+function t(key){
+  const lang = state.language || 'en';
+  const val = (TRANSLATIONS[lang] && TRANSLATIONS[lang][key] !== undefined) ? TRANSLATIONS[lang][key] : TRANSLATIONS.en[key];
+  return val;
+}
+
+function streakSentence(n){
+  const lang = state.language || 'en';
+  if(lang === 'es') return `${n} ${n===1?'mes seguido':'meses seguidos'} dentro del presupuesto.`;
+  if(lang === 'nl') return `${n} ${n===1?'maand':'maanden'} op rij binnen budget.`;
+  if(lang === 'pap') return `${n} luna den fila bou di presupuesto.`;
+  return `${n} month${n===1?'':'s'} in a row under budget.`;
+}
+function reminderSentence(days){
+  const lang = state.language || 'en';
+  if(lang === 'es') return `No has registrado un retiro en ${days} días. ¿Todo al día?`;
+  if(lang === 'nl') return `Je hebt al ${days} dagen geen opname vastgelegd. Alles bijgewerkt?`;
+  if(lang === 'pap') return `Bo no a registrá un retiro den ${days} dia. Tur kos ta na dia?`;
+  return `You haven't logged a withdrawal in ${days} days. Everything up to date?`;
+}
+function importSuccessSentence(n){
+  const lang = state.language || 'en';
+  if(lang === 'es') return `Se importaron ${n} retiro${n===1?'':'s'}.`;
+  if(lang === 'nl') return `${n} opname${n===1?'':'s'} geïmporteerd.`;
+  if(lang === 'pap') return `${n} retiro importá.`;
+  return `Imported ${n} withdrawal${n===1?'':'s'}.`;
+}
+
 let state = {
   accounts: ['Checking'],
   currentAccount: 'Checking',
   currency: '$',
   darkMode: false,
+  language: 'en',
   categories: DEFAULT_CATEGORIES,
   budgets: {},
   entries: {},
@@ -407,6 +560,7 @@ current.setDate(1);
 let selectedDate = null;
 let lastDeleted = null;
 let chartInstance = null;
+let lastSavedTime = null;
 
 const el = id => document.getElementById(id);
 const monthLabel = el('monthLabel');
@@ -425,6 +579,7 @@ const monthTotalEl = el('monthTotal');
 const listBody = el('listBody');
 const accountSelect = el('accountSelect');
 const currencySelect = el('currencySelect');
+const languageSelect = el('languageSelect');
 const budgetInput = el('budgetInput');
 const budgetFill = el('budgetFill');
 const budgetStatus = el('budgetStatus');
@@ -442,13 +597,6 @@ const undoBtn = el('undoBtn');
 const undoText = el('undoText');
 const reminderBanner = el('reminderBanner');
 const reminderText = el('reminderText');
-
-DOW.forEach(d => {
-  const d1 = document.createElement('div');
-  d1.className = 'dow';
-  d1.textContent = d;
-  dowRow.appendChild(d1);
-});
 
 function fmtKey(y,m,d){
   return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -479,6 +627,9 @@ async function loadData(){
   populateAccountSelect();
   populateCategorySelect();
   currencySelect.value = state.currency;
+  languageSelect.value = state.language;
+  applyStaticTranslations();
+  renderDow();
   checkReminder();
   render();
 }
@@ -486,15 +637,15 @@ async function loadData(){
 async function persist(){
   try{
     await window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
+    lastSavedTime = new Date();
     const ind = el('saveIndicator');
     if(ind){
-      const now = new Date();
-      ind.textContent = 'Saved at ' + now.toLocaleTimeString(undefined,{hour:'2-digit', minute:'2-digit'});
+      ind.textContent = t('savedAt')(lastSavedTime.toLocaleTimeString(undefined,{hour:'2-digit', minute:'2-digit'}));
     }
   }catch(e){
-    statusEl.textContent = 'Could not save. Try again.';
+    statusEl.textContent = t('saveError');
     const ind = el('saveIndicator');
-    if(ind) ind.textContent = 'Could not save your last change.';
+    if(ind) ind.textContent = t('saveError');
   }
 }
 
@@ -533,6 +684,54 @@ function populateCategorySelect(){
   });
 }
 
+function renderDow(){
+  dowRow.innerHTML = '';
+  DOW_SHORT[state.language].forEach(d => {
+    const d1 = document.createElement('div');
+    d1.className = 'dow';
+    d1.textContent = d;
+    dowRow.appendChild(d1);
+  });
+}
+
+function applyStaticTranslations(){
+  el('titleMain').textContent = t('titleMain');
+  el('titleAccent').textContent = t('titleAccent');
+  el('monthTotalLabel').textContent = t('monthTotalLabel');
+  el('addAccountBtn').textContent = t('addAccount');
+  el('darkToggle').title = t('darkToggleTitle');
+  el('budgetLabelText').textContent = t('budgetLabel');
+  el('yearViewBtn').textContent = t('yearView');
+  el('amountLabelText').textContent = t('amountLabel');
+  el('categoryLabelText').textContent = t('categoryLabel');
+  el('noteLabelText').textContent = t('noteLabel');
+  noteInput.placeholder = t('notePlaceholder');
+  el('recurringLabelText').textContent = t('recurringLabel');
+  saveBtn.textContent = t('save');
+  deleteBtn.textContent = t('deleteEntry');
+  searchInput.placeholder = t('searchPlaceholder');
+  sortSelect.options[0].textContent = t('sortNewest');
+  sortSelect.options[1].textContent = t('sortOldest');
+  sortSelect.options[2].textContent = t('sortLargest');
+  sortSelect.options[3].textContent = t('sortSmallest');
+  el('listHeaderText').textContent = t('listHeader');
+  el('spendingByMonthTitle').textContent = t('spendingByMonth');
+  el('byCategoryTitle').textContent = t('byCategory');
+  el('statsTitleText').textContent = t('statsTitle');
+  el('yourDataTitle').textContent = t('yourData');
+  el('exportCsvBtn').textContent = t('exportCsv');
+  el('backupBtn').textContent = t('downloadBackup');
+  el('restoreLabelText').textContent = t('restoreBackup');
+  el('importLabelText').textContent = t('importLabel');
+  el('pasteImport').placeholder = t('importPlaceholder');
+  el('pasteImportBtn').textContent = t('importBtn');
+  el('dismissBanner').textContent = t('dismiss');
+  el('undoBtn').textContent = t('undo');
+  if(!lastSavedTime){
+    el('saveIndicator').textContent = t('saveAuto');
+  }
+}
+
 function checkReminder(){
   const entries = accountEntries();
   const keys = Object.keys(entries).sort();
@@ -541,7 +740,7 @@ function checkReminder(){
   const lastDate = new Date(lastKey + 'T00:00:00');
   const days = Math.floor((new Date() - lastDate) / (1000*60*60*24));
   if(days >= 10){
-    reminderText.textContent = `You haven't logged a withdrawal in ${days} days. Everything up to date?`;
+    reminderText.textContent = reminderSentence(days);
     reminderBanner.classList.remove('hide');
   }else{
     reminderBanner.classList.add('hide');
@@ -561,7 +760,7 @@ function render(){
 function renderCalendar(){
   const y = current.getFullYear();
   const m = current.getMonth();
-  monthLabel.textContent = current.toLocaleString(undefined,{month:'long', year:'numeric'});
+  monthLabel.textContent = `${MONTHS_FULL[state.language][m]} ${y}`;
   calGrid.innerHTML = '';
   const entries = accountEntries();
   const firstDow = new Date(y,m,1).getDay();
@@ -600,7 +799,7 @@ function renderCalendar(){
     if(entries[key]){
       const amt = document.createElement('div');
       amt.className = 'amount';
-      amt.textContent = fmtMoney(entries[key].amount) + (entries[key].recurring ? ' ↻' : '');
+      amt.textContent = fmtMoney(entries[key].amount) + (entries[key].recurring ? ' \u21bb' : '');
       cell.appendChild(amt);
       monthTotal += Number(entries[key].amount);
     }
@@ -623,17 +822,16 @@ function renderBudget(){
   if(!budget || budget <= 0){
     budgetFill.style.width = '0%';
     budgetFill.classList.remove('over');
-    budgetStatus.textContent = 'No budget set for this account.';
+    budgetStatus.textContent = t('noBudget');
     budgetRemaining.textContent = '';
   }else{
     const pct = Math.min(100, (total/budget)*100);
     budgetFill.style.width = pct + '%';
     budgetFill.classList.toggle('over', total > budget);
-    budgetStatus.textContent = total > budget ? 'Over budget' : 'On track';
-    budgetRemaining.textContent = fmtMoney(Math.max(0,budget-total)) + ' left';
+    budgetStatus.textContent = total > budget ? t('overBudget') : t('onTrack');
+    budgetRemaining.textContent = fmtMoney(Math.max(0,budget-total)) + ' ' + t('left');
   }
 
-  // streak: consecutive months under budget (or logged) - simplified: count past months with entries and under budget
   let streak = 0;
   for(let i=1;i<=12;i++){
     const dt = new Date(y, m-i, 1);
@@ -648,7 +846,7 @@ function renderBudget(){
       break;
     }
   }
-  streakText.textContent = budget ? `${streak} month${streak===1?'':'s'} in a row under budget.` : '';
+  streakText.textContent = budget ? streakSentence(streak) : '';
 }
 
 function getFilteredSortedEntries(){
@@ -672,10 +870,14 @@ function getFilteredSortedEntries(){
   return list;
 }
 
+function shortDateLabel(dateObj){
+  return `${MONTHS_FULL[state.language][dateObj.getMonth()].slice(0,3)} ${dateObj.getDate()}`;
+}
+
 function renderList(){
   const list = getFilteredSortedEntries();
   if(list.length === 0){
-    listBody.innerHTML = '<p class="empty-hint">Nothing logged yet. Click a day above to add one.</p>';
+    listBody.innerHTML = `<p class="empty-hint">${t('emptyHint')}</p>`;
     return;
   }
   listBody.innerHTML = '';
@@ -683,7 +885,7 @@ function renderList(){
     const row = document.createElement('div');
     row.className = 'list-row';
     const dateObj = new Date(e.key + 'T00:00:00');
-    const dLabel = dateObj.toLocaleDateString(undefined,{month:'short', day:'numeric'});
+    const dLabel = shortDateLabel(dateObj);
     row.innerHTML = `<span class="d">${dLabel}</span><span class="n">${e.note ? e.note : ''}</span><span class="c">${e.category || ''}</span><span class="a">${fmtMoney(e.amount)}</span>`;
     listBody.appendChild(row);
   });
@@ -695,7 +897,7 @@ function renderChart(){
   const totals = [];
   for(let i=5;i>=0;i--){
     const dt = new Date(current.getFullYear(), current.getMonth()-i, 1);
-    const label = dt.toLocaleString(undefined,{month:'short'});
+    const label = MONTHS_FULL[state.language][dt.getMonth()].slice(0,3);
     const sum = Object.keys(entries).reduce((s,k)=>{
       const d = new Date(k+'T00:00:00');
       if(d.getFullYear()===dt.getFullYear() && d.getMonth()===dt.getMonth()) return s + Number(entries[k].amount);
@@ -710,7 +912,7 @@ function renderChart(){
     type: 'bar',
     data: {
       labels: months,
-      datasets: [{ label: 'Withdrawn', data: totals, backgroundColor: '#9C4331' }]
+      datasets: [{ label: '', data: totals, backgroundColor: '#9C4331' }]
     },
     options: {
       responsive: true,
@@ -721,7 +923,6 @@ function renderChart(){
 }
 
 function renderCategoryBreakdown(){
-  const list = getFilteredSortedEntries();
   const all = accountEntries();
   const y = current.getFullYear(), m = current.getMonth();
   const monthList = Object.keys(all).filter(k=>{
@@ -738,7 +939,7 @@ function renderCategoryBreakdown(){
   });
 
   if(grandTotal === 0){
-    catBreakdown.innerHTML = '<p class="empty-hint">No withdrawals yet this month.</p>';
+    catBreakdown.innerHTML = `<p class="empty-hint">${t('noCategoryData')}</p>`;
     return;
   }
   catBreakdown.innerHTML = '';
@@ -760,7 +961,7 @@ function renderStats(){
   const all = Object.keys(entries).map(k => ({key:k, ...entries[k]}));
   statsGrid.innerHTML = '';
   if(all.length === 0){
-    statsGrid.innerHTML = '<p class="empty-hint">Stats will show up once you log a few withdrawals.</p>';
+    statsGrid.innerHTML = `<p class="empty-hint">${t('statsEmpty')}</p>`;
     return;
   }
   const totalAll = all.reduce((s,e)=>s+Number(e.amount),0);
@@ -778,15 +979,15 @@ function renderStats(){
   });
   const activeMonthKey = Object.keys(monthSums).reduce((a,b)=> monthSums[a]>monthSums[b]?a:b);
   const [ay,am] = activeMonthKey.split('-').map(Number);
-  const activeMonthLabel = new Date(ay,am,1).toLocaleString(undefined,{month:'short', year:'numeric'});
+  const activeMonthLabel = `${MONTHS_FULL[state.language][am].slice(0,3)} ${ay}`;
 
   const stats = [
-    {label:'Average withdrawal', value: fmtMoney(avg)},
-    {label:'Total withdrawals logged', value: all.length},
-    {label:'Biggest withdrawal', value: fmtMoney(biggest.amount)},
-    {label:'Most active month', value: activeMonthLabel},
-    {label:'Most common day', value: DOW[maxDow]},
-    {label:'All-time total', value: fmtMoney(totalAll)}
+    {label:t('statAvg'), value: fmtMoney(avg)},
+    {label:t('statTotalCount'), value: all.length},
+    {label:t('statBiggest'), value: fmtMoney(biggest.amount)},
+    {label:t('statActiveMonth'), value: activeMonthLabel},
+    {label:t('statCommonDay'), value: DOW_FULL[state.language][maxDow]},
+    {label:t('statAllTime'), value: fmtMoney(totalAll)}
   ];
   stats.forEach(s => {
     const card = document.createElement('div');
@@ -808,7 +1009,7 @@ function renderYearView(){
     },0);
     const cell = document.createElement('div');
     cell.className = 'year-cell';
-    const label = new Date(y,m,1).toLocaleString(undefined,{month:'long'});
+    const label = MONTHS_FULL[state.language][m];
     cell.innerHTML = `<div class="m">${label}</div><div class="t">${fmtMoney(sum)}</div>`;
     cell.addEventListener('click', () => {
       current = new Date(y,m,1);
@@ -824,7 +1025,7 @@ function openPanel(key){
   selectedDate = key;
   panel.style.display = 'block';
   const dateObj = new Date(key + 'T00:00:00');
-  panelDate.textContent = dateObj.toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  panelDate.textContent = `${DOW_FULL[state.language][dateObj.getDay()]}, ${MONTHS_FULL[state.language][dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;
   statusEl.textContent = '';
   const entries = accountEntries();
   if(entries[key]){
@@ -847,7 +1048,7 @@ function openPanel(key){
 saveBtn.addEventListener('click', async () => {
   const val = parseFloat(amountInput.value);
   if(isNaN(val) || val <= 0){
-    statusEl.textContent = 'Enter an amount greater than 0.';
+    statusEl.textContent = t('enterAmount');
     return;
   }
   const entries = accountEntries();
@@ -870,7 +1071,7 @@ saveBtn.addEventListener('click', async () => {
   }
 
   await persist();
-  statusEl.textContent = 'Saved.';
+  statusEl.textContent = t('saved');
   deleteBtn.style.display = 'inline-block';
   render();
 });
@@ -887,7 +1088,7 @@ deleteBtn.addEventListener('click', async () => {
 });
 
 function showUndo(){
-  undoText.textContent = 'Entry removed.';
+  undoText.textContent = t('undoRemoved');
   undoToast.classList.remove('hidden');
   clearTimeout(showUndo._t);
   showUndo._t = setTimeout(()=> undoToast.classList.add('hidden'), 6000);
@@ -942,7 +1143,7 @@ accountSelect.addEventListener('change', () => {
   render();
 });
 el('addAccountBtn').addEventListener('click', async () => {
-  const name = prompt('Name this account (e.g. Savings, Joint):');
+  const name = prompt(t('addAccountPrompt'));
   if(name && !state.accounts.includes(name)){
     state.accounts.push(name);
     state.currentAccount = name;
@@ -954,6 +1155,15 @@ el('addAccountBtn').addEventListener('click', async () => {
 
 currencySelect.addEventListener('change', async () => {
   state.currency = currencySelect.value;
+  await persist();
+  render();
+});
+
+languageSelect.addEventListener('change', async () => {
+  state.language = languageSelect.value;
+  applyStaticTranslations();
+  renderDow();
+  checkReminder();
   await persist();
   render();
 });
@@ -1010,12 +1220,15 @@ el('restoreInput').addEventListener('change', (e) => {
       populateAccountSelect();
       populateCategorySelect();
       currencySelect.value = state.currency;
+      languageSelect.value = state.language;
       applyTheme();
+      applyStaticTranslations();
+      renderDow();
       await persist();
       render();
-      alert('Backup restored.');
+      alert(t('backupRestored'));
     }catch(err){
-      alert('That file could not be read as a valid backup.');
+      alert(t('backupInvalid'));
     }
   };
   reader.readAsText(file);
@@ -1044,13 +1257,13 @@ el('pasteImportBtn').addEventListener('click', async () => {
     el('pasteImport').value = '';
     render();
     statusEl.textContent = '';
-    alert(`Imported ${count} withdrawal${count===1?'':'s'}.`);
+    alert(importSuccessSentence(count));
   }else{
-    alert('No valid lines found. Use format: YYYY-MM-DD, amount, category, note');
+    alert(t('importFail'));
   }
 });
 
 loadData();
 </script>
 </body>
-</html>
+</html>.

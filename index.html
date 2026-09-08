@@ -6,6 +6,7 @@
 <title>Withdrawal ledger</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="manifest" id="manifestLink">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   :root{
@@ -18,7 +19,6 @@
     --brass: #A9822F;
     --green: #3E6B4F;
     --card: #FBF9F4;
-    --danger-bg: #F6E3DE;
   }
   html[data-theme="dark"]{
     --paper: #1B1E24;
@@ -30,7 +30,6 @@
     --brass: #D8B45B;
     --green: #7FBE94;
     --card: #23262E;
-    --danger-bg: #3A2A28;
   }
   *{box-sizing:border-box;}
   body{
@@ -39,83 +38,62 @@
     font-family:'IBM Plex Mono', monospace;
     color:var(--ink);
     min-height:100vh;
-    padding:40px 20px 80px;
+    padding:40px 20px 100px;
     transition:background 0.2s ease, color 0.2s ease;
   }
   .wrap{max-width:820px;margin:0 auto;}
   header{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    border-bottom:2px solid var(--ink);
-    padding-bottom:18px;
-    margin-bottom:20px;
-    flex-wrap:wrap;
-    gap:16px;
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:20px;
+    flex-wrap:wrap;gap:16px;
   }
-  h1{
-    font-family:'Source Serif 4', serif;
-    font-weight:600;
-    font-size:28px;
-    margin:0;
-    letter-spacing:0.2px;
-  }
+  h1{font-family:'Source Serif 4', serif;font-weight:600;font-size:28px;margin:0;letter-spacing:0.2px;}
   h1 span{color:var(--rust);}
   .header-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
   .month-total{text-align:right;}
   .month-total .label{font-size:11px;color:var(--ink-soft);letter-spacing:0.5px;}
   .month-total .value{font-size:24px;font-weight:500;color:var(--rust);}
+  .month-total .converted{font-size:11px;color:var(--ink-soft);margin-top:2px;}
   select, .textbtn{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:12px;
-    border:1px solid var(--ink-soft);
-    background:var(--card);
-    color:var(--ink);
-    padding:6px 8px;
-    cursor:pointer;
+    font-family:'IBM Plex Mono', monospace;font-size:12px;border:1px solid var(--ink-soft);
+    background:var(--card);color:var(--ink);padding:6px 8px;cursor:pointer;
   }
   button{font-family:'IBM Plex Mono', monospace;cursor:pointer;}
   .icon-toggle{
-    border:1px solid var(--ink-soft);
-    background:var(--card);
-    color:var(--ink);
-    font-size:14px;
-    padding:6px 10px;
+    border:1px solid var(--ink-soft);background:var(--card);color:var(--ink);
+    font-size:14px;padding:6px 10px;
   }
   .icon-toggle:hover{background:var(--ink);color:var(--paper);}
 
   .banner{
-    border:1px solid var(--brass);
-    background:var(--card);
-    color:var(--ink);
-    padding:10px 14px;
-    font-size:13px;
-    margin-bottom:16px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
+    border:1px solid var(--brass);background:var(--card);color:var(--ink);
+    padding:10px 14px;font-size:13px;margin-bottom:16px;
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
   }
   .banner.hide{display:none;}
-  .banner button{
-    background:none;border:none;color:var(--ink-soft);font-size:13px;
-  }
+  .banner button{background:none;border:none;color:var(--ink-soft);font-size:13px;}
 
-  .budget-box{
-    border:1px solid var(--paper-line);
-    background:var(--card);
-    padding:14px 16px;
-    margin-bottom:20px;
+  .settings-panel{
+    border:1px solid var(--ink);background:var(--card);padding:16px 18px;margin-bottom:20px;
+    display:none;
   }
+  .settings-panel.open{display:block;}
+  .settings-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--paper-line);font-size:13px;flex-wrap:wrap;}
+  .settings-row:last-child{border-bottom:none;}
+  .settings-row .st-label{color:var(--ink-soft);font-size:12px;max-width:60%;}
+  .settings-row input[type=number],.settings-row input[type=text]{
+    font-family:'IBM Plex Mono', monospace;font-size:13px;border:1px solid var(--ink-soft);
+    background:var(--paper);color:var(--ink);padding:6px 8px;width:100px;
+  }
+  .settings-sub{font-size:11px;color:var(--ink-soft);margin-top:4px;line-height:1.5;}
+  .warning-text{color:var(--rust);font-size:11px;margin-top:4px;line-height:1.5;}
+  .trust-blurb{font-size:12px;color:var(--ink-soft);line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid var(--paper-line);}
+
+  .budget-box{border:1px solid var(--paper-line);background:var(--card);padding:14px 16px;margin-bottom:20px;}
   .budget-box .row{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
   .budget-box input[type=number]{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
-    border:1px solid var(--ink-soft);
-    background:var(--paper);
-    color:var(--ink);
-    padding:6px 8px;
-    width:100px;
+    font-family:'IBM Plex Mono', monospace;font-size:13px;border:1px solid var(--ink-soft);
+    background:var(--paper);color:var(--ink);padding:6px 8px;width:100px;
   }
   .bar-track{height:10px;background:var(--paper-line);width:100%;}
   .bar-fill{height:10px;background:var(--green);transition:width 0.2s ease, background 0.2s ease;}
@@ -123,28 +101,14 @@
   .streak{font-size:12px;color:var(--ink-soft);margin-top:6px;}
 
   .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-  .nav button.arrow{
-    background:none;border:1px solid var(--ink);color:var(--ink);
-    font-size:16px;width:34px;height:34px;
-  }
+  .nav button.arrow{background:none;border:1px solid var(--ink);color:var(--ink);font-size:16px;width:34px;height:34px;}
   .nav button.arrow:hover{background:var(--ink);color:var(--paper);}
   .nav .month-label{font-family:'Source Serif 4', serif;font-size:19px;font-weight:600;}
   .nav .view-toggle{display:flex;gap:6px;}
 
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(7,1fr);
-    border-top:1px solid var(--paper-line);
-    border-left:1px solid var(--paper-line);
-  }
-  .dow{
-    font-size:11px;text-align:center;padding:8px 0;color:var(--ink-soft);
-    letter-spacing:0.5px;border-right:1px solid var(--paper-line);border-bottom:1px solid var(--paper-line);
-  }
-  .cell{
-    min-height:78px;border-right:1px solid var(--paper-line);border-bottom:1px solid var(--paper-line);
-    padding:8px 6px;cursor:pointer;background:var(--card);position:relative;transition:background 0.12s ease;
-  }
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--paper-line);border-left:1px solid var(--paper-line);}
+  .dow{font-size:11px;text-align:center;padding:8px 0;color:var(--ink-soft);letter-spacing:0.5px;border-right:1px solid var(--paper-line);border-bottom:1px solid var(--paper-line);}
+  .cell{min-height:78px;border-right:1px solid var(--paper-line);border-bottom:1px solid var(--paper-line);padding:8px 6px;cursor:pointer;background:var(--card);position:relative;transition:background 0.12s ease;}
   .cell:hover{background:var(--paper-line);}
   .cell.empty{background:transparent;cursor:default;}
   .cell.selected{outline:2px solid var(--ink);outline-offset:-2px;}
@@ -158,55 +122,35 @@
   .panel .date-title{font-family:'Source Serif 4', serif;font-size:18px;font-weight:600;margin:0 0 14px;}
   .panel-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
   .panel-row label{font-size:12px;color:var(--ink-soft);}
-  .panel input[type=number]{
-    font-family:'IBM Plex Mono', monospace;font-size:16px;border:1px solid var(--ink-soft);
-    background:var(--paper);color:var(--ink);padding:8px 10px;width:140px;
-  }
-  .panel input[type=text]{
-    font-family:'IBM Plex Mono', monospace;font-size:14px;border:1px solid var(--ink-soft);
-    background:var(--paper);color:var(--ink);padding:8px 10px;flex:1;min-width:160px;
-  }
+  .panel input[type=number]{font-family:'IBM Plex Mono', monospace;font-size:16px;border:1px solid var(--ink-soft);background:var(--paper);color:var(--ink);padding:8px 10px;width:140px;}
+  .panel input[type=text]{font-family:'IBM Plex Mono', monospace;font-size:14px;border:1px solid var(--ink-soft);background:var(--paper);color:var(--ink);padding:8px 10px;flex:1;min-width:160px;}
   .panel select{padding:8px 10px;font-size:13px;}
   .panel .checkbox-row{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);}
-  .panel button.primary{
-    border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:9px 16px;font-size:13px;
-  }
+  .panel button.primary{border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:9px 16px;font-size:13px;}
   .panel button.secondary{background:none;color:var(--rust);border:1px solid var(--rust-soft);padding:9px 16px;font-size:13px;}
   .panel button:hover{opacity:0.85;}
   .panel .actions{margin-top:4px;display:flex;gap:10px;}
   .empty-hint{font-size:13px;color:var(--ink-soft);}
   .status{font-size:11px;color:var(--ink-soft);margin-top:6px;min-height:14px;}
+  .status.warn{color:var(--rust);}
 
   .search-row{display:flex;gap:10px;margin:26px 0 10px;flex-wrap:wrap;align-items:center;}
-  .search-row input[type=text]{
-    font-family:'IBM Plex Mono', monospace;font-size:13px;border:1px solid var(--ink-soft);
-    background:var(--card);color:var(--ink);padding:8px 10px;flex:1;min-width:160px;
-  }
+  .search-row input[type=text]{font-family:'IBM Plex Mono', monospace;font-size:13px;border:1px solid var(--ink-soft);background:var(--card);color:var(--ink);padding:8px 10px;flex:1;min-width:160px;}
 
-  .list h2{
-    font-family:'Source Serif 4', serif;font-size:16px;font-weight:600;
-    border-bottom:1px solid var(--paper-line);padding-bottom:8px;margin-bottom:4px;
-  }
+  .list h2{font-family:'Source Serif 4', serif;font-size:16px;font-weight:600;border-bottom:1px solid var(--paper-line);padding-bottom:8px;margin-bottom:4px;}
   .list-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--paper-line);font-size:13px;gap:10px;}
   .list-row .d{color:var(--ink-soft);width:70px;flex-shrink:0;}
   .list-row .n{color:var(--ink);flex:1;}
   .list-row .c{color:var(--ink-soft);font-size:11px;width:80px;flex-shrink:0;}
   .list-row .a{color:var(--rust);font-weight:500;width:90px;text-align:right;flex-shrink:0;}
 
-  .stats-grid{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0;
-  }
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:24px 0;}
   .stat-card{border:1px solid var(--paper-line);background:var(--card);padding:12px 14px;}
   .stat-card .label{font-size:11px;color:var(--ink-soft);margin-bottom:6px;}
   .stat-card .value{font-size:18px;font-weight:500;}
 
-  .section-title{
-    font-family:'Source Serif 4', serif;font-size:16px;font-weight:600;
-    border-bottom:1px solid var(--paper-line);padding-bottom:8px;margin:34px 0 14px;
-  }
-
+  .section-title{font-family:'Source Serif 4', serif;font-size:16px;font-weight:600;border-bottom:1px solid var(--paper-line);padding-bottom:8px;margin:34px 0 14px;}
   .chart-box{border:1px solid var(--paper-line);background:var(--card);padding:16px;margin-bottom:24px;}
-
   .cat-breakdown-row{display:flex;align-items:center;gap:10px;font-size:13px;padding:6px 0;}
   .cat-breakdown-row .name{width:100px;flex-shrink:0;display:flex;align-items:center;gap:6px;}
   .cat-breakdown-row .bar-track{flex:1;}
@@ -219,25 +163,45 @@
   .year-cell .t{font-size:15px;font-weight:500;color:var(--rust);margin-top:4px;}
 
   .data-box{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
-  .data-box button, .data-box label.filebtn{
-    border:1px solid var(--ink-soft);background:var(--card);color:var(--ink);
-    padding:8px 14px;font-size:12px;
-  }
+  .data-box button, .data-box label.filebtn{border:1px solid var(--ink-soft);background:var(--card);color:var(--ink);padding:8px 14px;font-size:12px;}
   .data-box button:hover, .data-box label.filebtn:hover{background:var(--ink);color:var(--paper);}
   .data-box input[type=file]{display:none;}
   .import-box{margin-top:14px;}
-  .import-box textarea{
-    width:100%;min-height:70px;font-family:'IBM Plex Mono', monospace;font-size:12px;
-    border:1px solid var(--ink-soft);background:var(--paper);color:var(--ink);padding:8px;
-  }
+  .import-box textarea{width:100%;min-height:70px;font-family:'IBM Plex Mono', monospace;font-size:12px;border:1px solid var(--ink-soft);background:var(--paper);color:var(--ink);padding:8px;}
 
-  .toast{
-    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-    background:var(--ink);color:var(--paper);padding:10px 18px;font-size:13px;
-    display:flex;gap:14px;align-items:center;z-index:50;
-  }
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;font-size:13px;display:flex;gap:14px;align-items:center;z-index:50;}
   .toast button{background:none;border:1px solid var(--paper);color:var(--paper);padding:4px 10px;font-size:12px;}
   .toast.hidden{display:none;}
+
+  .fab{
+    position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;
+    background:var(--ink);color:var(--paper);border:none;font-size:26px;line-height:1;
+    box-shadow:0 3px 10px rgba(0,0,0,0.25);z-index:40;
+  }
+  .quick-card{
+    position:fixed;bottom:86px;right:24px;width:min(300px, calc(100vw - 48px));
+    background:var(--card);border:1px solid var(--ink);padding:14px 16px;z-index:40;
+    box-shadow:0 3px 12px rgba(0,0,0,0.2);display:none;
+  }
+  .quick-card.open{display:block;}
+  .quick-card input[type=text]{
+    width:100%;font-family:'IBM Plex Mono', monospace;font-size:13px;border:1px solid var(--ink-soft);
+    background:var(--paper);color:var(--ink);padding:8px 10px;margin-bottom:8px;
+  }
+  .quick-card .hint{font-size:11px;color:var(--ink-soft);margin-bottom:8px;}
+  .quick-card .confirm{font-size:11px;color:var(--green);min-height:14px;}
+
+  .lock-screen{
+    position:fixed;inset:0;background:var(--paper);z-index:100;
+    display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px;
+  }
+  .lock-screen.open{display:flex;}
+  .lock-screen input[type=password]{
+    font-family:'IBM Plex Mono', monospace;font-size:20px;letter-spacing:6px;text-align:center;
+    border:1px solid var(--ink);background:var(--card);color:var(--ink);padding:12px 16px;width:200px;
+  }
+  .lock-screen button{border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:10px 20px;font-size:13px;}
+  .lock-screen .err{color:var(--rust);font-size:12px;min-height:14px;}
 </style>
 </head>
 <body>
@@ -245,33 +209,14 @@
   <header>
     <h1><span id="titleMain">Withdrawal</span> <span id="titleAccent">ledger</span></h1>
     <div class="header-right">
-      <select id="languageSelect">
-        <option value="en">English</option>
-        <option value="es">Español</option>
-        <option value="nl">Nederlands</option>
-        <option value="pap">Papiamento</option>
-      </select>
       <select id="accountSelect"></select>
       <button class="icon-toggle" id="addAccountBtn">+ account</button>
-      <select id="currencySelect">
-        <option value="$">$ (USD)</option>
-        <option value="€">€ (EUR)</option>
-        <option value="£">£ (GBP)</option>
-        <option value="¥">¥ (JPY)</option>
-        <option value="₹">₹ (INR)</option>
-        <option value="Afl. ">Afl. (Aruban florin)</option>
-        <option value="ƒ">ƒ (Neth. Antillean guilder)</option>
-        <option value="CA$">CA$ (Canadian dollar)</option>
-        <option value="Mex$">Mex$ (Mexican peso)</option>
-        <option value="R$">R$ (Brazilian real)</option>
-        <option value="Fr. ">Fr. (Swiss franc)</option>
-        <option value="A$">A$ (Australian dollar)</option>
-        <option value="Bs. ">Bs. (Venezuelan bolívar)</option>
-      </select>
       <button class="icon-toggle" id="darkToggle">◐</button>
+      <button class="icon-toggle" id="settingsBtn">⚙</button>
       <div class="month-total">
         <div class="label" id="monthTotalLabel">taken out this month</div>
         <div class="value" id="monthTotal">$0.00</div>
+        <div class="converted" id="convertedTotal"></div>
       </div>
     </div>
   </header>
@@ -280,6 +225,76 @@
   <div class="banner hide" id="reminderBanner">
     <span id="reminderText"></span>
     <button id="dismissBanner">dismiss</button>
+  </div>
+  <div class="banner hide" id="backupReminderBanner">
+    <span id="backupReminderText"></span>
+    <button id="dismissBackupBanner">dismiss</button>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-row">
+      <span class="st-label" id="languageLabelText">Language</span>
+      <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="nl">Nederlands</option>
+        <option value="pap">Papiamento</option>
+      </select>
+    </div>
+    <div class="settings-row">
+      <span class="st-label" id="accountCurrencyLabelText">This account's currency</span>
+      <select id="currencySelect"></select>
+    </div>
+    <div class="settings-row">
+      <span class="st-label" id="homeCurrencyLabelText">Home currency (for conversions)</span>
+      <select id="homeCurrencySelect"></select>
+    </div>
+    <div class="settings-row" style="flex-direction:column;align-items:flex-start;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+        <span class="st-label" id="exchangeRateLabelText">Exchange rate to home currency</span>
+        <input type="number" id="exchangeRateInput" step="0.0001" min="0" placeholder="1.0000">
+      </div>
+      <div class="settings-sub" id="exchangeRateHintText"></div>
+    </div>
+    <div class="settings-row" style="flex-direction:column;align-items:flex-start;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+        <span class="st-label" id="sharedLabelText">Shared account</span>
+        <input type="checkbox" id="sharedCheck">
+      </div>
+      <div class="warning-text" id="sharedWarningText"></div>
+    </div>
+    <div class="settings-row" style="flex-direction:column;align-items:flex-start;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+        <span class="st-label" id="pinSectionLabelText">PIN lock</span>
+        <div style="display:flex;gap:6px;">
+          <button class="icon-toggle" id="setPinBtn">Set PIN</button>
+          <button class="icon-toggle" id="removePinBtn" style="display:none;">Remove</button>
+        </div>
+      </div>
+      <div class="settings-sub" id="pinStatusText"></div>
+    </div>
+    <div class="settings-row">
+      <span class="st-label" id="lastBackupText"></span>
+    </div>
+    <div class="settings-row" style="flex-direction:column;align-items:flex-start;">
+      <span class="st-label" id="categoriesLabelText" style="margin-bottom:6px;">Categories</span>
+      <div id="categoryManagerList" style="width:100%;"></div>
+      <div style="display:flex;gap:8px;width:100%;margin-top:8px;">
+        <input type="text" id="newCategoryInput" style="flex:1;font-family:'IBM Plex Mono', monospace;font-size:13px;border:1px solid var(--ink-soft);background:var(--paper);color:var(--ink);padding:6px 8px;">
+        <button class="icon-toggle" id="addCategoryBtn">Add category</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <span class="st-label" id="replayTourLabelText"></span>
+      <button class="icon-toggle" id="replayTourBtn">Replay tour</button>
+    </div>
+    <div class="settings-row" style="flex-direction:column;align-items:flex-start;">
+      <div style="display:flex;justify-content:space-between;width:100%;align-items:center;">
+        <span class="st-label" id="resetDataLabelText" style="color:var(--rust);"></span>
+        <button class="icon-toggle" id="resetDataBtn" style="border-color:var(--rust-soft);color:var(--rust);">Reset all data</button>
+      </div>
+    </div>
+    <p class="trust-blurb" id="dataTrustText"></p>
   </div>
 
   <div class="budget-box">
@@ -298,9 +313,7 @@
   <div class="nav">
     <button class="arrow" id="prevMonth" aria-label="Previous month">&lsaquo;</button>
     <div class="month-label" id="monthLabel"></div>
-    <div class="view-toggle">
-      <button class="textbtn" id="yearViewBtn">Year view</button>
-    </div>
+    <div class="view-toggle"><button class="textbtn" id="yearViewBtn">Year view</button></div>
     <button class="arrow" id="nextMonth" aria-label="Next month">&rsaquo;</button>
   </div>
 
@@ -331,9 +344,7 @@
     </div>
   </div>
 
-  <div id="yearView" style="display:none;">
-    <div class="year-grid" id="yearGrid"></div>
-  </div>
+  <div id="yearView" style="display:none;"><div class="year-grid" id="yearGrid"></div></div>
 
   <div class="search-row">
     <input type="text" id="searchInput">
@@ -351,9 +362,7 @@
   </div>
 
   <div class="section-title" id="spendingByMonthTitle">Spending by month</div>
-  <div class="chart-box">
-    <canvas id="monthChart" height="140"></canvas>
-  </div>
+  <div class="chart-box"><canvas id="monthChart" height="140"></canvas></div>
 
   <div class="section-title" id="byCategoryTitle">By category</div>
   <div class="chart-box" id="catBreakdown"></div>
@@ -372,16 +381,38 @@
   <div class="import-box">
     <label style="font-size:12px;color:var(--ink-soft);" id="importLabelText"></label>
     <textarea id="pasteImport"></textarea>
-    <div class="data-box" style="margin-top:8px;">
-      <button id="pasteImportBtn">Import pasted lines</button>
-    </div>
+    <div class="data-box" style="margin-top:8px;"><button id="pasteImportBtn">Import pasted lines</button></div>
   </div>
+</div>
 
+<button class="fab" id="quickAddFab">+</button>
+<div class="quick-card" id="quickAddCard">
+  <div class="hint" id="quickAddHintText"></div>
+  <input type="text" id="quickAddInput">
+  <button class="icon-toggle" id="quickAddSubmit" style="width:100%;">Add</button>
+  <div class="confirm" id="quickAddConfirm"></div>
 </div>
 
 <div class="toast hidden" id="undoToast">
   <span id="undoText">Entry removed</span>
   <button id="undoBtn">Undo</button>
+</div>
+
+<div class="lock-screen" id="lockScreen">
+  <div id="unlockTitleText" style="font-family:'Source Serif 4', serif;font-size:20px;"></div>
+  <input type="password" id="pinEntryInput" inputmode="numeric">
+  <button id="pinEntrySubmit">Unlock</button>
+  <div class="err" id="pinEntryError"></div>
+</div>
+
+<div class="lock-screen" id="onboardingScreen" style="z-index:90;">
+  <div id="onboardingTitle" style="font-family:'Source Serif 4', serif;font-size:20px;text-align:center;max-width:320px;"></div>
+  <div id="onboardingText" style="font-size:13px;text-align:center;max-width:320px;color:var(--ink-soft);line-height:1.6;"></div>
+  <div style="display:flex;gap:10px;">
+    <button class="icon-toggle" id="onboardingSkip"></button>
+    <button id="onboardingNext"></button>
+  </div>
+  <div id="onboardingDots" style="font-size:11px;color:var(--ink-soft);"></div>
 </div>
 
 <script>
@@ -391,6 +422,12 @@ const CAT_COLORS = {
   'Groceries':'#639922','Bills':'#378ADD','Fun':'#D4537E','Gifts':'#EF9F27',
   'Transport':'#7F77DD','Other':'#888780'
 };
+const CURRENCIES = [
+  {v:'$', l:'$ (USD)'}, {v:'€', l:'€ (EUR)'}, {v:'£', l:'£ (GBP)'}, {v:'¥', l:'¥ (JPY)'}, {v:'₹', l:'₹ (INR)'},
+  {v:'Afl. ', l:'Afl. (Aruban florin)'}, {v:'ƒ', l:'ƒ (Neth. Antillean guilder)'},
+  {v:'CA$', l:'CA$ (Canadian dollar)'}, {v:'Mex$', l:'Mex$ (Mexican peso)'}, {v:'R$', l:'R$ (Brazilian real)'},
+  {v:'Fr. ', l:'Fr. (Swiss franc)'}, {v:'A$', l:'A$ (Australian dollar)'}, {v:'Bs. ', l:'Bs. (Venezuelan bolívar)'}
+];
 
 const DOW_SHORT = {
   en: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
@@ -416,6 +453,7 @@ const TRANSLATIONS = {
     titleMain:'Withdrawal', titleAccent:'ledger', monthTotalLabel:'taken out this month',
     saveAuto:'All changes save automatically.', savedAt:t=>`Saved at ${t}`, saveError:'Could not save your last change.',
     addAccount:'+ account', addAccountPrompt:'Name this account (e.g. Savings, Joint):',
+    addAccountSharedConfirm:'Make this a SHARED account? Anyone who opens this ledger link will be able to see and edit it. Click OK for shared, Cancel to keep it private.',
     darkToggleTitle:'Toggle dark mode', budgetLabel:'Monthly budget limit',
     noBudget:'No budget set for this account.', overBudget:'Over budget', onTrack:'On track', left:'left',
     yearView:'Year view', amountLabel:'Amount', categoryLabel:'Category', noteLabel:'Note',
@@ -427,23 +465,55 @@ const TRANSLATIONS = {
     byCategory:'By category', noCategoryData:'No withdrawals yet this month.', statsTitle:'Stats',
     statsEmpty:'Stats will show up once you log a few withdrawals.', statAvg:'Average withdrawal',
     statTotalCount:'Total withdrawals logged', statBiggest:'Biggest withdrawal', statActiveMonth:'Most active month',
-    statCommonDay:'Most common day', statAllTime:'All-time total', yourData:'Your data', exportCsv:'Export CSV',
-    downloadBackup:'Download backup (JSON)', restoreBackup:'Restore from backup',
+    statCommonDay:'Most common day', statAllTime:'All-time total', statTrend:'Trend vs 3-mo average',
+    statTrendNoData:'Not enough history yet', statRunway:'Estimated next withdrawal',
+    statRunwayNoData:'Log a couple more to estimate', statAvgGap:'Average days between withdrawals',
+    yourData:'Your data', exportCsv:'Export CSV', downloadBackup:'Download backup (JSON)',
+    restoreBackup:'Restore from backup',
     importLabel:'Paste past withdrawals to import — one per line, format: YYYY-MM-DD, amount, category, note',
     importPlaceholder:'2026-08-03, 60, Groceries, weekly shop', importBtn:'Import pasted lines',
     importFail:'No valid lines found. Use format: YYYY-MM-DD, amount, category, note',
     backupRestored:'Backup restored.', backupInvalid:'That file could not be read as a valid backup.',
-    undoRemoved:'Entry removed.', undo:'Undo', dismiss:'dismiss'
+    undoRemoved:'Entry removed.', undo:'Undo', dismiss:'dismiss',
+    languageLabel:'Language', accountCurrencyLabel:"This account's currency",
+    homeCurrencyLabel:'Home currency (for conversions)', exchangeRateLabel:'Exchange rate to home currency',
+    exchangeRateHint:'How many units of this account\u2019s currency equal 1 unit of your home currency. You enter this manually — rates aren\u2019t fetched live.',
+    sharedLabel:'Shared account', sharedWarning:'Careful: entries in a shared account are visible to and editable by anyone who opens this ledger link.',
+    pinSectionLabel:'PIN lock', setPin:'Set PIN', removePin:'Remove', pinPromptNew:'Choose a 4+ digit PIN:',
+    pinPromptConfirm:'Enter your PIN', pinWrong:'Incorrect PIN, try again.', pinRemoved:'PIN removed.',
+    pinSet:'PIN set.', pinStatusOn:'A PIN is set. This is a basic screen lock, not encryption.',
+    pinStatusOff:'No PIN set.', unlockTitle:'Enter PIN to continue', unlockBtn:'Unlock',
+    lastBackupPrefix:'Last backup:', lastBackupNever:'Never backed up',
+    backupReminderNever:"You've never downloaded a backup. Consider saving one from Your Data below.",
+    backupReminderOld:"It's been over a month since your last backup. Consider downloading a fresh one.",
+    dataTrustBlurb:"Your entries are stored through this app's built-in storage, tied to your device/account. Shared accounts are the exception — those are visible to anyone with this ledger's link. A PIN adds a basic screen lock, not real encryption. Use the backup export any time you want an offline copy of everything.",
+    quickAddHint:'Amount first, then category, then note — e.g. "60 groceries lunch run"',
+    quickAddPlaceholder:'60 groceries lunch run', quickAddBtn:'Add', quickAddAdded:'Added to today.',
+    anomalyPrefix:'Heads up: notably higher than your usual', trendHigher:'higher', trendLower:'lower',
+    categoriesLabel:'Categories', addCategoryBtn:'Add category', renameCategory:'Rename', removeCategory:'Remove',
+    renameCategoryPrompt:'New name for this category:',
+    removeCategoryConfirm:'Remove this category? Existing entries using it will move to "Other".',
+    obStep1Title:'Welcome to your withdrawal ledger',
+    obStep1Text:"A quick tour of what's here — tap Next to continue, or Skip any time.",
+    obStep2Title:'Log a withdrawal', obStep2Text:'Tap any day on the calendar to add an amount, category, and note for that date.',
+    obStep3Title:'Quick add', obStep3Text:'Use the + button in the corner to log today\u2019s withdrawal fast, like typing "60 groceries lunch".',
+    obStep4Title:'Settings', obStep4Text:'Tap the gear icon for language, currency, budget, PIN lock, shared accounts, and categories.',
+    obStep5Title:'Insights', obStep5Text:'Scroll down for spending trends, category breakdowns, and a year view.',
+    obNext:'Next', obSkip:'Skip', obDone:'Got it',
+    replayTour:'Replay tour', resetData:'Reset all data',
+    resetDataConfirm:'This permanently deletes everything in this account\u2019s ledger — entries, budget, and settings for this account. This cannot be undone. Continue?',
+    resetDataDone:'This account has been reset.', tourSectionLabel:'Onboarding tour', dangerZoneLabel:'Danger zone'
   },
   es: {
     titleMain:'Registro de', titleAccent:'retiros', monthTotalLabel:'retirado este mes',
     saveAuto:'Todos los cambios se guardan automáticamente.', savedAt:t=>`Guardado a las ${t}`,
     saveError:'No se pudo guardar tu último cambio.', addAccount:'+ cuenta',
-    addAccountPrompt:'Nombra esta cuenta (ej. Ahorros, Conjunta):', darkToggleTitle:'Cambiar modo oscuro',
-    budgetLabel:'Límite de presupuesto mensual', noBudget:'No hay presupuesto establecido para esta cuenta.',
-    overBudget:'Presupuesto excedido', onTrack:'Dentro del presupuesto', left:'restante', yearView:'Vista anual',
-    amountLabel:'Monto', categoryLabel:'Categoría', noteLabel:'Nota',
-    notePlaceholder:'ej. comestibles, efectivo para el fin de semana',
+    addAccountPrompt:'Nombra esta cuenta (ej. Ahorros, Conjunta):',
+    addAccountSharedConfirm:'¿Hacer esta cuenta COMPARTIDA? Cualquiera con este enlace podrá verla y editarla. OK para compartida, Cancelar para privada.',
+    darkToggleTitle:'Cambiar modo oscuro', budgetLabel:'Límite de presupuesto mensual',
+    noBudget:'No hay presupuesto establecido para esta cuenta.', overBudget:'Presupuesto excedido',
+    onTrack:'Dentro del presupuesto', left:'restante', yearView:'Vista anual', amountLabel:'Monto',
+    categoryLabel:'Categoría', noteLabel:'Nota', notePlaceholder:'ej. comestibles, efectivo para el fin de semana',
     recurringLabel:'Se repite mensualmente (rellena meses futuros)', save:'Guardar', deleteEntry:'Eliminar entrada',
     enterAmount:'Ingresa un monto mayor que 0.', saved:'Guardado.', searchPlaceholder:'Buscar notas o categoría...',
     sortNewest:'Más reciente primero', sortOldest:'Más antiguo primero', sortLargest:'Monto más alto',
@@ -453,20 +523,52 @@ const TRANSLATIONS = {
     statsTitle:'Estadísticas', statsEmpty:'Las estadísticas aparecerán cuando registres algunos retiros.',
     statAvg:'Retiro promedio', statTotalCount:'Total de retiros registrados', statBiggest:'Retiro más grande',
     statActiveMonth:'Mes más activo', statCommonDay:'Día más común', statAllTime:'Total histórico',
-    yourData:'Tus datos', exportCsv:'Exportar CSV', downloadBackup:'Descargar copia de seguridad (JSON)',
-    restoreBackup:'Restaurar copia de seguridad',
+    statTrend:'Tendencia vs promedio 3 meses', statTrendNoData:'Aún no hay suficiente historial',
+    statRunway:'Próximo retiro estimado', statRunwayNoData:'Registra un par más para estimar',
+    statAvgGap:'Días promedio entre retiros', yourData:'Tus datos', exportCsv:'Exportar CSV',
+    downloadBackup:'Descargar copia de seguridad (JSON)', restoreBackup:'Restaurar copia de seguridad',
     importLabel:'Pega retiros anteriores para importar — uno por línea, formato: AAAA-MM-DD, monto, categoría, nota',
     importPlaceholder:'2026-08-03, 60, Comestibles, compra semanal', importBtn:'Importar líneas pegadas',
     importFail:'No se encontraron líneas válidas. Usa el formato: AAAA-MM-DD, monto, categoría, nota',
     backupRestored:'Copia de seguridad restaurada.',
     backupInvalid:'Ese archivo no se pudo leer como una copia de seguridad válida.',
-    undoRemoved:'Entrada eliminada.', undo:'Deshacer', dismiss:'descartar'
+    undoRemoved:'Entrada eliminada.', undo:'Deshacer', dismiss:'descartar', languageLabel:'Idioma',
+    accountCurrencyLabel:'Moneda de esta cuenta', homeCurrencyLabel:'Moneda base (para conversiones)',
+    exchangeRateLabel:'Tasa de cambio a la moneda base',
+    exchangeRateHint:'Cuántas unidades de la moneda de esta cuenta equivalen a 1 unidad de tu moneda base. Se ingresa manualmente.',
+    sharedLabel:'Cuenta compartida',
+    sharedWarning:'Cuidado: las entradas de una cuenta compartida son visibles y editables por cualquiera con este enlace.',
+    pinSectionLabel:'Bloqueo con PIN', setPin:'Establecer PIN', removePin:'Quitar', pinPromptNew:'Elige un PIN de 4+ dígitos:',
+    pinPromptConfirm:'Ingresa tu PIN', pinWrong:'PIN incorrecto, intenta de nuevo.', pinRemoved:'PIN eliminado.',
+    pinSet:'PIN establecido.', pinStatusOn:'Hay un PIN activo. Es un bloqueo básico, no encriptación.',
+    pinStatusOff:'No hay PIN.', unlockTitle:'Ingresa el PIN para continuar', unlockBtn:'Desbloquear',
+    lastBackupPrefix:'Última copia:', lastBackupNever:'Nunca se ha hecho copia',
+    backupReminderNever:'Nunca has descargado una copia de seguridad. Considera guardar una abajo en Tus Datos.',
+    backupReminderOld:'Ha pasado más de un mes desde tu última copia. Considera descargar una nueva.',
+    dataTrustBlurb:'Tus entradas se guardan mediante el almacenamiento propio de esta app, vinculado a tu cuenta/dispositivo. Las cuentas compartidas son la excepción — son visibles para cualquiera con el enlace. Un PIN es un bloqueo básico, no encriptación real. Usa la copia de seguridad cuando quieras una copia externa.',
+    quickAddHint:'Primero el monto, luego categoría, luego nota — ej. "60 comestibles almuerzo"',
+    quickAddPlaceholder:'60 comestibles almuerzo', quickAddBtn:'Agregar', quickAddAdded:'Agregado a hoy.',
+    anomalyPrefix:'Aviso: notablemente más alto que tu promedio', trendHigher:'más alto', trendLower:'más bajo',
+    categoriesLabel:'Categorías', addCategoryBtn:'Agregar categoría', renameCategory:'Renombrar', removeCategory:'Eliminar',
+    renameCategoryPrompt:'Nuevo nombre para esta categoría:',
+    removeCategoryConfirm:'¿Eliminar esta categoría? Las entradas existentes pasarán a "Other".',
+    obStep1Title:'Bienvenido a tu registro de retiros',
+    obStep1Text:'Un recorrido rápido — toca Siguiente para continuar, o Saltar en cualquier momento.',
+    obStep2Title:'Registra un retiro', obStep2Text:'Toca cualquier día del calendario para agregar un monto, categoría y nota.',
+    obStep3Title:'Agregado rápido', obStep3Text:'Usa el botón + para registrar el retiro de hoy rápido, como escribir "60 comestibles almuerzo".',
+    obStep4Title:'Configuración', obStep4Text:'Toca el ícono de engranaje para idioma, moneda, presupuesto, PIN, cuentas compartidas y categorías.',
+    obStep5Title:'Perspectivas', obStep5Text:'Desplázate para ver tendencias, desglose por categoría y vista anual.',
+    obNext:'Siguiente', obSkip:'Saltar', obDone:'Entendido',
+    replayTour:'Repetir recorrido', resetData:'Restablecer todo',
+    resetDataConfirm:'Esto elimina permanentemente todo en el registro de esta cuenta — entradas, presupuesto y configuración. No se puede deshacer. ¿Continuar?',
+    resetDataDone:'Esta cuenta ha sido restablecida.', tourSectionLabel:'Recorrido de bienvenida', dangerZoneLabel:'Zona de peligro'
   },
   nl: {
     titleMain:'Opname', titleAccent:'boek', monthTotalLabel:'opgenomen deze maand',
     saveAuto:'Alle wijzigingen worden automatisch opgeslagen.', savedAt:t=>`Opgeslagen om ${t}`,
     saveError:'Kon je laatste wijziging niet opslaan.', addAccount:'+ rekening',
     addAccountPrompt:'Geef deze rekening een naam (bijv. Spaarrekening, Gezamenlijk):',
+    addAccountSharedConfirm:'Deze rekening GEDEELD maken? Iedereen met deze link kan het dan zien en bewerken. OK voor gedeeld, Annuleren voor privé.',
     darkToggleTitle:'Donkere modus wisselen', budgetLabel:'Maandelijks budgetlimiet',
     noBudget:'Geen budget ingesteld voor deze rekening.', overBudget:'Budget overschreden', onTrack:'Op schema',
     left:'over', yearView:'Jaaroverzicht', amountLabel:'Bedrag', categoryLabel:'Categorie', noteLabel:'Notitie',
@@ -480,22 +582,55 @@ const TRANSLATIONS = {
     statsTitle:'Statistieken', statsEmpty:'Statistieken verschijnen zodra je een paar opnames hebt vastgelegd.',
     statAvg:'Gemiddelde opname', statTotalCount:'Totaal aantal opnames', statBiggest:'Grootste opname',
     statActiveMonth:'Drukste maand', statCommonDay:'Meest voorkomende dag', statAllTime:'Totaal aller tijden',
-    yourData:'Jouw gegevens', exportCsv:'CSV exporteren', downloadBackup:'Back-up downloaden (JSON)',
-    restoreBackup:'Back-up herstellen',
+    statTrend:'Trend t.o.v. 3-mnd gemiddelde', statTrendNoData:'Nog niet genoeg geschiedenis',
+    statRunway:'Geschatte volgende opname', statRunwayNoData:'Log er nog een paar om te schatten',
+    statAvgGap:'Gemiddeld aantal dagen tussen opnames', yourData:'Jouw gegevens', exportCsv:'CSV exporteren',
+    downloadBackup:'Back-up downloaden (JSON)', restoreBackup:'Back-up herstellen',
     importLabel:'Plak eerdere opnames om te importeren — één per regel, formaat: JJJJ-MM-DD, bedrag, categorie, notitie',
     importPlaceholder:'2026-08-03, 60, Boodschappen, wekelijkse boodschappen', importBtn:'Geplakte regels importeren',
     importFail:'Geen geldige regels gevonden. Gebruik het formaat: JJJJ-MM-DD, bedrag, categorie, notitie',
     backupRestored:'Back-up hersteld.', backupInvalid:'Dat bestand kon niet worden gelezen als een geldige back-up.',
-    undoRemoved:'Item verwijderd.', undo:'Ongedaan maken', dismiss:'sluiten'
+    undoRemoved:'Item verwijderd.', undo:'Ongedaan maken', dismiss:'sluiten', languageLabel:'Taal',
+    accountCurrencyLabel:'Valuta van deze rekening', homeCurrencyLabel:'Basisvaluta (voor omrekening)',
+    exchangeRateLabel:'Wisselkoers naar basisvaluta',
+    exchangeRateHint:'Hoeveel eenheden van de valuta van deze rekening gelijk zijn aan 1 eenheid van je basisvaluta. Handmatig invullen.',
+    sharedLabel:'Gedeelde rekening',
+    sharedWarning:'Let op: items in een gedeelde rekening zijn zichtbaar en bewerkbaar voor iedereen met deze link.',
+    pinSectionLabel:'PIN-vergrendeling', setPin:'PIN instellen', removePin:'Verwijderen',
+    pinPromptNew:'Kies een PIN van 4+ cijfers:', pinPromptConfirm:'Voer je PIN in',
+    pinWrong:'Onjuiste PIN, probeer opnieuw.', pinRemoved:'PIN verwijderd.', pinSet:'PIN ingesteld.',
+    pinStatusOn:'Er is een PIN ingesteld. Dit is een basisvergrendeling, geen versleuteling.',
+    pinStatusOff:'Geen PIN ingesteld.', unlockTitle:'Voer PIN in om door te gaan', unlockBtn:'Ontgrendelen',
+    lastBackupPrefix:'Laatste back-up:', lastBackupNever:'Nog nooit een back-up gemaakt',
+    backupReminderNever:'Je hebt nog nooit een back-up gedownload. Overweeg er hieronder een te maken.',
+    backupReminderOld:'Het is meer dan een maand geleden sinds je laatste back-up. Overweeg een nieuwe te downloaden.',
+    dataTrustBlurb:"Je gegevens worden opgeslagen via de ingebouwde opslag van deze app, gekoppeld aan je account/apparaat. Gedeelde rekeningen zijn de uitzondering — die zijn zichtbaar voor iedereen met deze link. Een PIN is een basisvergrendeling, geen echte versleuteling. Gebruik de back-up export voor een offline kopie.",
+    quickAddHint:'Eerst bedrag, dan categorie, dan notitie — bijv. "60 boodschappen lunch"',
+    quickAddPlaceholder:'60 boodschappen lunch', quickAddBtn:'Toevoegen', quickAddAdded:'Toegevoegd aan vandaag.',
+    anomalyPrefix:'Let op: opvallend hoger dan je gemiddelde', trendHigher:'hoger', trendLower:'lager',
+    categoriesLabel:'Categorieën', addCategoryBtn:'Categorie toevoegen', renameCategory:'Hernoemen', removeCategory:'Verwijderen',
+    renameCategoryPrompt:'Nieuwe naam voor deze categorie:',
+    removeCategoryConfirm:'Deze categorie verwijderen? Bestaande items verhuizen naar "Other".',
+    obStep1Title:'Welkom bij je opnameboek',
+    obStep1Text:'Een korte rondleiding — tik op Volgende, of sla over wanneer je wilt.',
+    obStep2Title:'Log een opname', obStep2Text:'Tik op een dag in de kalender om een bedrag, categorie en notitie toe te voegen.',
+    obStep3Title:'Snel toevoegen', obStep3Text:'Gebruik de + knop om snel de opname van vandaag te loggen, bijv. "60 boodschappen lunch".',
+    obStep4Title:'Instellingen', obStep4Text:'Tik op het tandwiel voor taal, valuta, budget, PIN, gedeelde rekeningen en categorieën.',
+    obStep5Title:'Inzichten', obStep5Text:'Scroll naar beneden voor trends, categorie-overzicht en jaaroverzicht.',
+    obNext:'Volgende', obSkip:'Overslaan', obDone:'Begrepen',
+    replayTour:'Rondleiding herhalen', resetData:'Alles resetten',
+    resetDataConfirm:'Dit verwijdert permanent alles in het overzicht van deze rekening — items, budget en instellingen. Dit kan niet ongedaan gemaakt worden. Doorgaan?',
+    resetDataDone:'Deze rekening is gereset.', tourSectionLabel:'Rondleiding', dangerZoneLabel:'Gevarenzone'
   },
   pap: {
     titleMain:'Buki di', titleAccent:'retiro', monthTotalLabel:'a saká e luna aki',
     saveAuto:'Tur cambio ta wordo warda automáticamente.', savedAt:t=>`Wardá na ${t}`,
     saveError:'No por a warda bo último cambio.', addAccount:'+ kuenta',
-    addAccountPrompt:'Duna e kuenta aki un nomber (pf. Spaar, Kombiná):', darkToggleTitle:'Kambia modo skur',
-    budgetLabel:'Límite di presupuesto mensual', noBudget:'No tin presupuesto pone pa e kuenta aki.',
-    overBudget:'Riba presupuesto', onTrack:'Bon encaminá', left:'resta', yearView:'Bista di aña',
-    amountLabel:'Suma', categoryLabel:'Categoria', noteLabel:'Nota',
+    addAccountPrompt:'Duna e kuenta aki un nomber (pf. Spaar, Kombiná):',
+    addAccountSharedConfirm:'Hasi e kuenta aki KOMPARTÍ? Kada persona ku e link aki lo por mira i editá. OK pa kompartí, Cancelá pa privá.',
+    darkToggleTitle:'Kambia modo skur', budgetLabel:'Límite di presupuesto mensual',
+    noBudget:'No tin presupuesto pone pa e kuenta aki.', overBudget:'Riba presupuesto', onTrack:'Bon encaminá',
+    left:'resta', yearView:'Bista di aña', amountLabel:'Suma', categoryLabel:'Categoria', noteLabel:'Nota',
     notePlaceholder:'pf. compra, placa pa fin di siman',
     recurringLabel:'Ta repití mensualmente (yena lunanan futuro automáticamente)', save:'Warda',
     deleteEntry:'Kita entrada', enterAmount:'Duna un suma mas grandi ku 0.', saved:'Wardá.',
@@ -505,13 +640,45 @@ const TRANSLATIONS = {
     byCategory:'Pa categoria', noCategoryData:'Ainda no tin retiro e luna aki.', statsTitle:'Estadística',
     statsEmpty:'Estadística lo aparesé asina bo registrá algun retiro.', statAvg:'Retiro promedio',
     statTotalCount:'Total di retiro registrá', statBiggest:'Retiro mas grandi', statActiveMonth:'Luna mas activo',
-    statCommonDay:'Dia mas komun', statAllTime:'Total di tur tempu', yourData:'Bo data', exportCsv:'Exportá CSV',
-    downloadBackup:'Download backup (JSON)', restoreBackup:'Restora backup',
+    statCommonDay:'Dia mas komun', statAllTime:'Total di tur tempu', statTrend:'Tendensia vs promedio 3 luna',
+    statTrendNoData:'Ainda no tin sufisiente historia', statRunway:'Próksimo retiro estimá',
+    statRunwayNoData:'Registrá un par mas pa estimá', statAvgGap:'Promedio dia entre retiro',
+    yourData:'Bo data', exportCsv:'Exportá CSV', downloadBackup:'Download backup (JSON)',
+    restoreBackup:'Restora backup',
     importLabel:'Pega retiro di antes pa importá — un pa lini, formato: AAAA-MM-DD, suma, categoria, nota',
     importPlaceholder:'2026-08-03, 60, Compra, compra semanal', importBtn:'Importá liña pegá',
     importFail:'No a haña liña válido. Usa e formato: AAAA-MM-DD, suma, categoria, nota',
     backupRestored:'Backup restorá.', backupInvalid:'E ficha ei no por a wordo lesá komo un backup válido.',
-    undoRemoved:'Entrada kitá.', undo:'Deshasé', dismiss:'sera'
+    undoRemoved:'Entrada kitá.', undo:'Deshasé', dismiss:'sera', languageLabel:'Idioma',
+    accountCurrencyLabel:'Moneda di e kuenta aki', homeCurrencyLabel:'Moneda base (pa konvershon)',
+    exchangeRateLabel:'Tasa di kambio pa moneda base',
+    exchangeRateHint:'Kuantu unidat di e moneda di e kuenta aki ta igual na 1 unidat di bo moneda base. Bo ta yena esaki manualmente.',
+    sharedLabel:'Kuenta kompartí',
+    sharedWarning:'Kuidou: entrada den un kuenta kompartí ta visibel i editabel pa kualke hende ku e link aki.',
+    pinSectionLabel:'Blokeo di PIN', setPin:'Pone PIN', removePin:'Kita', pinPromptNew:'Skohe un PIN di 4+ dígito:',
+    pinPromptConfirm:'Yena bo PIN', pinWrong:'PIN robes, purba atrobe.', pinRemoved:'PIN kitá.', pinSet:'PIN pone.',
+    pinStatusOn:'Tin un PIN aktivo. Esaki ta un blokeo básiko, no ta enkriptashon.',
+    pinStatusOff:'No tin PIN.', unlockTitle:'Yena PIN pa kontinuá', unlockBtn:'Habri',
+    lastBackupPrefix:'Último backup:', lastBackupNever:'Nunka a hasi backup',
+    backupReminderNever:'Bo nunka a download un backup. Considerá warda un mas abou na Bo Data.',
+    backupReminderOld:'A pasa mas ku un luna since bo último backup. Considerá download un fresku.',
+    dataTrustBlurb:'Bo entrada ta wordo wardá dor di e storage propio di e app aki, ligá na bo aparato/kuenta. Kuenta kompartí ta e eksepshon — esakinan ta visibel pa kualke hende ku e link. Un PIN ta un blokeo básiko, no enkriptashon real. Usa e backup export si bo ke un kopia offline.',
+    quickAddHint:'Suma promé, despues categoria, despues nota — pf. "60 compra lunch"',
+    quickAddPlaceholder:'60 compra lunch', quickAddBtn:'Agregá', quickAddAdded:'Agregá na awe.',
+    anomalyPrefix:'Ainda: notablemente mas haltu ku bo promedio', trendHigher:'mas haltu', trendLower:'mas abou',
+    categoriesLabel:'Categorianan', addCategoryBtn:'Agregá categoria', renameCategory:'Kambia nomber', removeCategory:'Kita',
+    renameCategoryPrompt:'Nomber nobo pa e categoria aki:',
+    removeCategoryConfirm:'Kita e categoria aki? Entrada existente lo bai bou di "Other".',
+    obStep1Title:'Bon bini na bo buki di retiro',
+    obStep1Text:'Un tur kòrtiku — klik Siguiente pa kontinuá, òf Saltu ora bo ke.',
+    obStep2Title:'Registrá un retiro', obStep2Text:'Klik riba kualke dia den kalender pa agregá suma, categoria i nota.',
+    obStep3Title:'Agregá lihé', obStep3Text:'Usa e boton + pa registrá retiro di awe lihé, pf. "60 compra lunch".',
+    obStep4Title:'Konfigurashon', obStep4Text:'Klik e ikon di gear pa idioma, moneda, presupuesto, PIN, kuenta kompartí i categoria.',
+    obStep5Title:'Insight', obStep5Text:'Skol pa mira tendensia, desglose pa categoria i bista di aña.',
+    obNext:'Siguiente', obSkip:'Saltu', obDone:'Kompletá',
+    replayTour:'Repit e tur', resetData:'Reset tur data',
+    resetDataConfirm:'Esaki ta kita permanentemente tur kos den e kuenta aki — entrada, presupuesto i konfigurashon. No por wordo revertí. Continuá?',
+    resetDataDone:'E kuenta aki a wordo reset.', tourSectionLabel:'Tur di bon bini', dangerZoneLabel:'Zona di peliger'
   }
 };
 
@@ -520,7 +687,6 @@ function t(key){
   const val = (TRANSLATIONS[lang] && TRANSLATIONS[lang][key] !== undefined) ? TRANSLATIONS[lang][key] : TRANSLATIONS.en[key];
   return val;
 }
-
 function streakSentence(n){
   const lang = state.language || 'en';
   if(lang === 'es') return `${n} ${n===1?'mes seguido':'meses seguidos'} dentro del presupuesto.`;
@@ -552,7 +718,13 @@ let state = {
   categories: DEFAULT_CATEGORIES,
   budgets: {},
   entries: {},
-  lastOpened: null
+  accountCurrency: {},
+  accountExchangeRate: {},
+  accountShared: {},
+  pin: null,
+  lastBackupDate: null,
+  hasSeenOnboarding: false,
+  categoryColors: {}
 };
 
 let current = new Date();
@@ -561,6 +733,7 @@ let selectedDate = null;
 let lastDeleted = null;
 let chartInstance = null;
 let lastSavedTime = null;
+let sessionUnlocked = false;
 
 const el = id => document.getElementById(id);
 const monthLabel = el('monthLabel');
@@ -576,9 +749,12 @@ const saveBtn = el('saveBtn');
 const deleteBtn = el('deleteBtn');
 const statusEl = el('status');
 const monthTotalEl = el('monthTotal');
+const convertedTotalEl = el('convertedTotal');
 const listBody = el('listBody');
 const accountSelect = el('accountSelect');
 const currencySelect = el('currencySelect');
+const homeCurrencySelect = el('homeCurrencySelect');
+const exchangeRateInput = el('exchangeRateInput');
 const languageSelect = el('languageSelect');
 const budgetInput = el('budgetInput');
 const budgetFill = el('budgetFill');
@@ -597,12 +773,26 @@ const undoBtn = el('undoBtn');
 const undoText = el('undoText');
 const reminderBanner = el('reminderBanner');
 const reminderText = el('reminderText');
+const settingsPanel = el('settingsPanel');
+const sharedCheck = el('sharedCheck');
 
-function fmtKey(y,m,d){
-  return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+const CAT_PALETTE = ['#639922','#378ADD','#D4537E','#EF9F27','#7F77DD','#888780','#2E9E8F','#C2554D','#8E6C3B','#4F6D9A','#B25FA8','#5B8C3E'];
+function getCatColor(cat){
+  if(CAT_COLORS[cat]) return CAT_COLORS[cat];
+  if(state.categoryColors && state.categoryColors[cat]) return state.categoryColors[cat];
+  let hash = 0;
+  for(let i=0;i<cat.length;i++) hash = (hash*31 + cat.charCodeAt(i)) >>> 0;
+  const color = CAT_PALETTE[hash % CAT_PALETTE.length];
+  if(!state.categoryColors) state.categoryColors = {};
+  state.categoryColors[cat] = color;
+  return color;
 }
-function fmtMoney(n){
-  return state.currency + Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function fmtKey(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function getAccountCurrency(name){ return state.accountCurrency[name] || state.currency || '$'; }
+function fmtMoney(n, curr){
+  const c = curr !== undefined ? curr : getAccountCurrency(state.currentAccount);
+  return c + Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 function accountEntries(){
   if(!state.entries[state.currentAccount]) state.entries[state.currentAccount] = {};
@@ -612,6 +802,7 @@ function accountBudget(){
   if(!state.budgets[state.currentAccount]) state.budgets[state.currentAccount] = 0;
   return state.budgets[state.currentAccount];
 }
+function sharedKeyFor(name){ return 'shared-account-' + encodeURIComponent(name); }
 
 async function loadData(){
   try{
@@ -620,61 +811,101 @@ async function loadData(){
       const parsed = JSON.parse(res.value);
       state = Object.assign(state, parsed);
     }
-  }catch(e){
-    // no data yet, use defaults
+  }catch(e){ /* first run, no data yet */ }
+
+  try{
+    const manifest = { name:"Withdrawal Ledger", short_name:"Ledger", start_url:".", display:"standalone", background_color:"#F5F1E7", theme_color:"#24304A" };
+    const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+    el('manifestLink').href = URL.createObjectURL(blob);
+  }catch(e){ /* manifest not critical */ }
+
+  if(state.pin){
+    showLockScreen();
+  }else{
+    await initUI();
   }
+}
+
+function showLockScreen(){
+  el('unlockTitleText').textContent = t('unlockTitle');
+  el('pinEntrySubmit').textContent = t('unlockBtn');
+  el('lockScreen').classList.add('open');
+  el('pinEntryInput').focus();
+}
+el('pinEntrySubmit').addEventListener('click', async () => {
+  const val = el('pinEntryInput').value;
+  if(val === state.pin){
+    sessionUnlocked = true;
+    el('lockScreen').classList.remove('open');
+    await initUI();
+  }else{
+    el('pinEntryError').textContent = t('pinWrong');
+  }
+});
+el('pinEntryInput').addEventListener('keydown', e => { if(e.key === 'Enter') el('pinEntrySubmit').click(); });
+
+async function initUI(){
   applyTheme();
   populateAccountSelect();
   populateCategorySelect();
-  currencySelect.value = state.currency;
+  populateCurrencySelects();
   languageSelect.value = state.language;
   applyStaticTranslations();
   renderDow();
   checkReminder();
+  checkBackupReminder();
+  await syncSharedAccountIfNeeded();
   render();
+  if(!state.hasSeenOnboarding) startOnboarding();
 }
 
 async function persist(){
   try{
     await window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
+    if(state.accountShared[state.currentAccount]){
+      try{ await window.storage.set(sharedKeyFor(state.currentAccount), JSON.stringify(accountEntries()), true); }catch(e){}
+    }
     lastSavedTime = new Date();
     const ind = el('saveIndicator');
-    if(ind){
-      ind.textContent = t('savedAt')(lastSavedTime.toLocaleTimeString(undefined,{hour:'2-digit', minute:'2-digit'}));
-    }
+    if(ind) ind.textContent = t('savedAt')(lastSavedTime.toLocaleTimeString(undefined,{hour:'2-digit', minute:'2-digit'}));
   }catch(e){
     statusEl.textContent = t('saveError');
     const ind = el('saveIndicator');
     if(ind) ind.textContent = t('saveError');
   }
 }
-
 function persistBeacon(){
   try{
     window.storage.set(STORAGE_KEY, JSON.stringify(state), false);
-  }catch(e){
-    // best-effort only, nothing more to do on unload
-  }
+    if(state.accountShared[state.currentAccount]) window.storage.set(sharedKeyFor(state.currentAccount), JSON.stringify(accountEntries()), true);
+  }catch(e){}
 }
 window.addEventListener('beforeunload', persistBeacon);
-document.addEventListener('visibilitychange', () => {
-  if(document.visibilityState === 'hidden') persistBeacon();
-});
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') persistBeacon(); });
 
-function applyTheme(){
-  document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
+async function syncSharedAccountIfNeeded(){
+  const name = state.currentAccount;
+  if(!state.accountShared[name]) return;
+  try{
+    const res = await window.storage.get(sharedKeyFor(name), true);
+    if(res && res.value) state.entries[name] = JSON.parse(res.value);
+    else await window.storage.set(sharedKeyFor(name), JSON.stringify(state.entries[name]||{}), true);
+  }catch(e){
+    try{ await window.storage.set(sharedKeyFor(name), JSON.stringify(state.entries[name]||{}), true); }catch(e2){}
+  }
 }
+
+function applyTheme(){ document.documentElement.setAttribute('data-theme', state.darkMode ? 'dark' : 'light'); }
 
 function populateAccountSelect(){
   accountSelect.innerHTML = '';
   state.accounts.forEach(a => {
     const o = document.createElement('option');
-    o.value = a; o.textContent = a;
+    o.value = a; o.textContent = a + (state.accountShared[a] ? ' \u2022 shared' : '');
     accountSelect.appendChild(o);
   });
   accountSelect.value = state.currentAccount;
 }
-
 function populateCategorySelect(){
   categorySelect.innerHTML = '';
   state.categories.forEach(c => {
@@ -683,13 +914,23 @@ function populateCategorySelect(){
     categorySelect.appendChild(o);
   });
 }
+function populateCurrencySelects(){
+  currencySelect.innerHTML = '';
+  homeCurrencySelect.innerHTML = '';
+  CURRENCIES.forEach(c => {
+    const o1 = document.createElement('option'); o1.value = c.v; o1.textContent = c.l; currencySelect.appendChild(o1);
+    const o2 = document.createElement('option'); o2.value = c.v; o2.textContent = c.l; homeCurrencySelect.appendChild(o2);
+  });
+  currencySelect.value = getAccountCurrency(state.currentAccount);
+  homeCurrencySelect.value = state.currency;
+  exchangeRateInput.value = state.accountExchangeRate[state.currentAccount] || '';
+}
 
 function renderDow(){
   dowRow.innerHTML = '';
   DOW_SHORT[state.language].forEach(d => {
     const d1 = document.createElement('div');
-    d1.className = 'dow';
-    d1.textContent = d;
+    d1.className = 'dow'; d1.textContent = d;
     dowRow.appendChild(d1);
   });
 }
@@ -726,9 +967,41 @@ function applyStaticTranslations(){
   el('pasteImport').placeholder = t('importPlaceholder');
   el('pasteImportBtn').textContent = t('importBtn');
   el('dismissBanner').textContent = t('dismiss');
+  el('dismissBackupBanner').textContent = t('dismiss');
   el('undoBtn').textContent = t('undo');
-  if(!lastSavedTime){
-    el('saveIndicator').textContent = t('saveAuto');
+  el('languageLabelText').textContent = t('languageLabel');
+  el('accountCurrencyLabelText').textContent = t('accountCurrencyLabel');
+  el('homeCurrencyLabelText').textContent = t('homeCurrencyLabel');
+  el('exchangeRateLabelText').textContent = t('exchangeRateLabel');
+  el('exchangeRateHintText').textContent = t('exchangeRateHint');
+  el('sharedLabelText').textContent = t('sharedLabel');
+  el('sharedWarningText').textContent = t('sharedWarning');
+  el('pinSectionLabelText').textContent = t('pinSectionLabel');
+  el('setPinBtn').textContent = t('setPin');
+  el('removePinBtn').textContent = t('removePin');
+  el('pinStatusText').textContent = state.pin ? t('pinStatusOn') : t('pinStatusOff');
+  el('setPinBtn').style.display = state.pin ? 'none' : 'inline-block';
+  el('removePinBtn').style.display = state.pin ? 'inline-block' : 'none';
+  el('dataTrustText').textContent = t('dataTrustBlurb');
+  el('quickAddHintText').textContent = t('quickAddHint');
+  el('quickAddInput').placeholder = t('quickAddPlaceholder');
+  el('quickAddSubmit').textContent = t('quickAddBtn');
+  el('categoriesLabelText').textContent = t('categoriesLabel');
+  el('addCategoryBtn').textContent = t('addCategoryBtn');
+  el('replayTourBtn').textContent = t('replayTour');
+  el('resetDataBtn').textContent = t('resetData');
+  el('replayTourLabelText').textContent = t('tourSectionLabel');
+  el('resetDataLabelText').textContent = t('dangerZoneLabel');
+  updateLastBackupText();
+  if(!lastSavedTime) el('saveIndicator').textContent = t('saveAuto');
+}
+
+function updateLastBackupText(){
+  if(!state.lastBackupDate){
+    el('lastBackupText').textContent = t('lastBackupPrefix') + ' ' + t('lastBackupNever');
+  }else{
+    const d = new Date(state.lastBackupDate);
+    el('lastBackupText').textContent = t('lastBackupPrefix') + ' ' + d.toLocaleDateString();
   }
 }
 
@@ -746,6 +1019,21 @@ function checkReminder(){
     reminderBanner.classList.add('hide');
   }
 }
+function checkBackupReminder(){
+  const banner = el('backupReminderBanner');
+  if(!state.lastBackupDate){
+    el('backupReminderText').textContent = t('backupReminderNever');
+    banner.classList.remove('hide');
+    return;
+  }
+  const days = Math.floor((new Date() - new Date(state.lastBackupDate)) / (1000*60*60*24));
+  if(days > 30){
+    el('backupReminderText').textContent = t('backupReminderOld');
+    banner.classList.remove('hide');
+  }else{
+    banner.classList.add('hide');
+  }
+}
 
 function render(){
   renderCalendar();
@@ -758,8 +1046,7 @@ function render(){
 }
 
 function renderCalendar(){
-  const y = current.getFullYear();
-  const m = current.getMonth();
+  const y = current.getFullYear(); const m = current.getMonth();
   monthLabel.textContent = `${MONTHS_FULL[state.language][m]} ${y}`;
   calGrid.innerHTML = '';
   const entries = accountEntries();
@@ -769,11 +1056,8 @@ function renderCalendar(){
   const todayKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
 
   for(let i=0;i<firstDow;i++){
-    const cell = document.createElement('div');
-    cell.className = 'cell empty';
-    calGrid.appendChild(cell);
+    const cell = document.createElement('div'); cell.className = 'cell empty'; calGrid.appendChild(cell);
   }
-
   let monthTotal = 0;
   for(let d=1; d<=daysInMonth; d++){
     const key = fmtKey(y,m,d);
@@ -782,32 +1066,32 @@ function renderCalendar(){
     if(key === todayKey) cell.classList.add('today');
     if(entries[key]) cell.classList.add('has-entry');
     if(key === selectedDate) cell.classList.add('selected');
-
-    const daynum = document.createElement('div');
-    daynum.className = 'daynum';
-    const numSpan = document.createElement('span');
-    numSpan.textContent = d;
-    daynum.appendChild(numSpan);
+    const daynum = document.createElement('div'); daynum.className = 'daynum';
+    const numSpan = document.createElement('span'); numSpan.textContent = d; daynum.appendChild(numSpan);
     if(entries[key]){
-      const dot = document.createElement('span');
-      dot.className = 'cat-dot';
-      dot.style.background = CAT_COLORS[entries[key].category] || CAT_COLORS['Other'];
+      const dot = document.createElement('span'); dot.className = 'cat-dot';
+      dot.style.background = getCatColor(entries[key].category || 'Other');
       daynum.appendChild(dot);
     }
     cell.appendChild(daynum);
-
     if(entries[key]){
-      const amt = document.createElement('div');
-      amt.className = 'amount';
+      const amt = document.createElement('div'); amt.className = 'amount';
       amt.textContent = fmtMoney(entries[key].amount) + (entries[key].recurring ? ' \u21bb' : '');
       cell.appendChild(amt);
       monthTotal += Number(entries[key].amount);
     }
-
     cell.addEventListener('click', () => openPanel(key));
     calGrid.appendChild(cell);
   }
   monthTotalEl.textContent = fmtMoney(monthTotal);
+
+  const rate = state.accountExchangeRate[state.currentAccount];
+  const acctCur = getAccountCurrency(state.currentAccount);
+  if(rate && rate > 0 && acctCur !== state.currency){
+    convertedTotalEl.textContent = '\u2248 ' + fmtMoney(monthTotal / rate, state.currency);
+  }else{
+    convertedTotalEl.textContent = '';
+  }
 }
 
 function renderBudget(){
@@ -820,10 +1104,8 @@ function renderBudget(){
   });
   const budget = accountBudget();
   if(!budget || budget <= 0){
-    budgetFill.style.width = '0%';
-    budgetFill.classList.remove('over');
-    budgetStatus.textContent = t('noBudget');
-    budgetRemaining.textContent = '';
+    budgetFill.style.width = '0%'; budgetFill.classList.remove('over');
+    budgetStatus.textContent = t('noBudget'); budgetRemaining.textContent = '';
   }else{
     const pct = Math.min(100, (total/budget)*100);
     budgetFill.style.width = pct + '%';
@@ -831,7 +1113,6 @@ function renderBudget(){
     budgetStatus.textContent = total > budget ? t('overBudget') : t('onTrack');
     budgetRemaining.textContent = fmtMoney(Math.max(0,budget-total)) + ' ' + t('left');
   }
-
   let streak = 0;
   for(let i=1;i<=12;i++){
     const dt = new Date(y, m-i, 1);
@@ -840,11 +1121,7 @@ function renderBudget(){
       return d.getFullYear()===dt.getFullYear() && d.getMonth()===dt.getMonth();
     });
     const monthSum = monthKeys.reduce((s,k)=>s+Number(entries[k].amount),0);
-    if(budget && monthSum <= budget && monthKeys.length>0){
-      streak++;
-    }else{
-      break;
-    }
+    if(budget && monthSum <= budget && monthKeys.length>0) streak++; else break;
   }
   streakText.textContent = budget ? streakSentence(streak) : '';
 }
@@ -857,9 +1134,7 @@ function getFilteredSortedEntries(){
     return d.getFullYear()===y && d.getMonth()===m;
   });
   const q = searchInput.value.trim().toLowerCase();
-  if(q){
-    list = list.filter(e => (e.note||'').toLowerCase().includes(q) || (e.category||'').toLowerCase().includes(q));
-  }
+  if(q) list = list.filter(e => (e.note||'').toLowerCase().includes(q) || (e.category||'').toLowerCase().includes(q));
   const sortVal = sortSelect.value;
   list.sort((a,b) => {
     if(sortVal === 'date-desc') return a.key < b.key ? 1 : -1;
@@ -869,32 +1144,23 @@ function getFilteredSortedEntries(){
   });
   return list;
 }
-
-function shortDateLabel(dateObj){
-  return `${MONTHS_FULL[state.language][dateObj.getMonth()].slice(0,3)} ${dateObj.getDate()}`;
-}
+function shortDateLabel(dateObj){ return `${MONTHS_FULL[state.language][dateObj.getMonth()].slice(0,3)} ${dateObj.getDate()}`; }
 
 function renderList(){
   const list = getFilteredSortedEntries();
-  if(list.length === 0){
-    listBody.innerHTML = `<p class="empty-hint">${t('emptyHint')}</p>`;
-    return;
-  }
+  if(list.length === 0){ listBody.innerHTML = `<p class="empty-hint">${t('emptyHint')}</p>`; return; }
   listBody.innerHTML = '';
   list.forEach(e => {
-    const row = document.createElement('div');
-    row.className = 'list-row';
+    const row = document.createElement('div'); row.className = 'list-row';
     const dateObj = new Date(e.key + 'T00:00:00');
-    const dLabel = shortDateLabel(dateObj);
-    row.innerHTML = `<span class="d">${dLabel}</span><span class="n">${e.note ? e.note : ''}</span><span class="c">${e.category || ''}</span><span class="a">${fmtMoney(e.amount)}</span>`;
+    row.innerHTML = `<span class="d">${shortDateLabel(dateObj)}</span><span class="n">${e.note ? e.note : ''}</span><span class="c">${e.category || ''}</span><span class="a">${fmtMoney(e.amount)}</span>`;
     listBody.appendChild(row);
   });
 }
 
 function renderChart(){
   const entries = accountEntries();
-  const months = [];
-  const totals = [];
+  const months = []; const totals = [];
   for(let i=5;i>=0;i--){
     const dt = new Date(current.getFullYear(), current.getMonth()-i, 1);
     const label = MONTHS_FULL[state.language][dt.getMonth()].slice(0,3);
@@ -903,22 +1169,14 @@ function renderChart(){
       if(d.getFullYear()===dt.getFullYear() && d.getMonth()===dt.getMonth()) return s + Number(entries[k].amount);
       return s;
     },0);
-    months.push(label);
-    totals.push(Math.round(sum*100)/100);
+    months.push(label); totals.push(Math.round(sum*100)/100);
   }
   const ctx = el('monthChart').getContext('2d');
   if(chartInstance) chartInstance.destroy();
   chartInstance = new Chart(ctx, {
     type: 'bar',
-    data: {
-      labels: months,
-      datasets: [{ label: '', data: totals, backgroundColor: '#9C4331' }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
-    }
+    data: { labels: months, datasets: [{ label: '', data: totals, backgroundColor: '#9C4331' }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
   });
 }
 
@@ -929,29 +1187,21 @@ function renderCategoryBreakdown(){
     const d = new Date(k+'T00:00:00');
     return d.getFullYear()===y && d.getMonth()===m;
   }).map(k=>all[k]);
-
-  const totals = {};
-  let grandTotal = 0;
+  const totals = {}; let grandTotal = 0;
   monthList.forEach(e => {
     const cat = e.category || 'Other';
     totals[cat] = (totals[cat]||0) + Number(e.amount);
     grandTotal += Number(e.amount);
   });
-
-  if(grandTotal === 0){
-    catBreakdown.innerHTML = `<p class="empty-hint">${t('noCategoryData')}</p>`;
-    return;
-  }
+  if(grandTotal === 0){ catBreakdown.innerHTML = `<p class="empty-hint">${t('noCategoryData')}</p>`; return; }
   catBreakdown.innerHTML = '';
   Object.keys(totals).sort((a,b)=>totals[b]-totals[a]).forEach(cat => {
     const pct = Math.round((totals[cat]/grandTotal)*100);
-    const row = document.createElement('div');
-    row.className = 'cat-breakdown-row';
+    const row = document.createElement('div'); row.className = 'cat-breakdown-row';
     row.innerHTML = `
-      <span class="name"><span class="cat-dot" style="background:${CAT_COLORS[cat]||CAT_COLORS['Other']}"></span>${cat}</span>
-      <span class="bar-track"><span class="bar-fill" style="width:${pct}%;background:${CAT_COLORS[cat]||CAT_COLORS['Other']}"></span></span>
-      <span class="pct">${pct}%</span>
-    `;
+      <span class="name"><span class="cat-dot" style="background:${getCatColor(cat)}"></span>${cat}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${pct}%;background:${getCatColor(cat)}"></span></span>
+      <span class="pct">${pct}%</span>`;
     catBreakdown.appendChild(row);
   });
 }
@@ -960,10 +1210,8 @@ function renderStats(){
   const entries = accountEntries();
   const all = Object.keys(entries).map(k => ({key:k, ...entries[k]}));
   statsGrid.innerHTML = '';
-  if(all.length === 0){
-    statsGrid.innerHTML = `<p class="empty-hint">${t('statsEmpty')}</p>`;
-    return;
-  }
+  if(all.length === 0){ statsGrid.innerHTML = `<p class="empty-hint">${t('statsEmpty')}</p>`; return; }
+
   const totalAll = all.reduce((s,e)=>s+Number(e.amount),0);
   const avg = totalAll/all.length;
   const biggest = all.reduce((a,b)=> Number(a.amount)>Number(b.amount)?a:b);
@@ -981,17 +1229,55 @@ function renderStats(){
   const [ay,am] = activeMonthKey.split('-').map(Number);
   const activeMonthLabel = `${MONTHS_FULL[state.language][am].slice(0,3)} ${ay}`;
 
+  const y = current.getFullYear(), m = current.getMonth();
+  const thisMonthTotal = all.filter(e=>{
+    const d = new Date(e.key+'T00:00:00'); return d.getFullYear()===y && d.getMonth()===m;
+  }).reduce((s,e)=>s+Number(e.amount),0);
+  let prevSum = 0, prevMonthsCounted = 0;
+  for(let i=1;i<=3;i++){
+    const dt = new Date(y, m-i, 1);
+    const sum = all.filter(e=>{
+      const d = new Date(e.key+'T00:00:00'); return d.getFullYear()===dt.getFullYear() && d.getMonth()===dt.getMonth();
+    }).reduce((s,e)=>s+Number(e.amount),0);
+    prevSum += sum; prevMonthsCounted++;
+  }
+  const prevAvg = prevSum / prevMonthsCounted;
+  let trendValue = t('statTrendNoData');
+  if(prevAvg > 0){
+    const pct = Math.round(Math.abs((thisMonthTotal - prevAvg) / prevAvg) * 100);
+    trendValue = `${pct}% ${thisMonthTotal >= prevAvg ? t('trendHigher') : t('trendLower')}`;
+  }
+
+  let runwayValue = t('statRunwayNoData');
+  let avgGapValue = t('statRunwayNoData');
+  const sortedKeys = Object.keys(entries).sort();
+  if(sortedKeys.length >= 2){
+    const gaps = [];
+    for(let i=1;i<sortedKeys.length;i++){
+      const d1 = new Date(sortedKeys[i-1]+'T00:00:00');
+      const d2 = new Date(sortedKeys[i]+'T00:00:00');
+      gaps.push((d2-d1)/(1000*60*60*24));
+    }
+    const avgGap = Math.round(gaps.reduce((a,b)=>a+b,0)/gaps.length);
+    const lastDate = new Date(sortedKeys[sortedKeys.length-1]+'T00:00:00');
+    const nextDate = new Date(lastDate.getTime() + avgGap*24*60*60*1000);
+    runwayValue = shortDateLabel(nextDate);
+    avgGapValue = avgGap;
+  }
+
   const stats = [
     {label:t('statAvg'), value: fmtMoney(avg)},
     {label:t('statTotalCount'), value: all.length},
     {label:t('statBiggest'), value: fmtMoney(biggest.amount)},
     {label:t('statActiveMonth'), value: activeMonthLabel},
     {label:t('statCommonDay'), value: DOW_FULL[state.language][maxDow]},
-    {label:t('statAllTime'), value: fmtMoney(totalAll)}
+    {label:t('statAllTime'), value: fmtMoney(totalAll)},
+    {label:t('statTrend'), value: trendValue},
+    {label:t('statRunway'), value: runwayValue},
+    {label:t('statAvgGap'), value: avgGapValue}
   ];
   stats.forEach(s => {
-    const card = document.createElement('div');
-    card.className = 'stat-card';
+    const card = document.createElement('div'); card.className = 'stat-card';
     card.innerHTML = `<div class="label">${s.label}</div><div class="value">${s.value}</div>`;
     statsGrid.appendChild(card);
   });
@@ -1007,14 +1293,11 @@ function renderYearView(){
       if(d.getFullYear()===y && d.getMonth()===m) return s+Number(entries[k].amount);
       return s;
     },0);
-    const cell = document.createElement('div');
-    cell.className = 'year-cell';
-    const label = MONTHS_FULL[state.language][m];
-    cell.innerHTML = `<div class="m">${label}</div><div class="t">${fmtMoney(sum)}</div>`;
+    const cell = document.createElement('div'); cell.className = 'year-cell';
+    cell.innerHTML = `<div class="m">${MONTHS_FULL[state.language][m]}</div><div class="t">${fmtMoney(sum)}</div>`;
     cell.addEventListener('click', () => {
       current = new Date(y,m,1);
-      monthView.style.display = 'block';
-      yearView.style.display = 'none';
+      monthView.style.display = 'block'; yearView.style.display = 'none';
       render();
     });
     yearGrid.appendChild(cell);
@@ -1027,6 +1310,7 @@ function openPanel(key){
   const dateObj = new Date(key + 'T00:00:00');
   panelDate.textContent = `${DOW_FULL[state.language][dateObj.getDay()]}, ${MONTHS_FULL[state.language][dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;
   statusEl.textContent = '';
+  statusEl.classList.remove('warn');
   const entries = accountEntries();
   if(entries[key]){
     amountInput.value = entries[key].amount;
@@ -1035,43 +1319,42 @@ function openPanel(key){
     recurringCheck.checked = !!entries[key].recurring;
     deleteBtn.style.display = 'inline-block';
   }else{
-    amountInput.value = '';
-    noteInput.value = '';
-    categorySelect.value = state.categories[0];
-    recurringCheck.checked = false;
+    amountInput.value = ''; noteInput.value = '';
+    categorySelect.value = state.categories[0]; recurringCheck.checked = false;
     deleteBtn.style.display = 'none';
   }
   renderCalendar();
   amountInput.focus();
 }
 
+function checkAnomaly(val, excludeKey){
+  const entries = accountEntries();
+  const others = Object.keys(entries).filter(k => k !== excludeKey).map(k => Number(entries[k].amount));
+  if(others.length < 3) return null;
+  const avg = others.reduce((a,b)=>a+b,0) / others.length;
+  if(avg > 0 && val > avg * 2.5) return `${t('anomalyPrefix')} (~${fmtMoney(avg)}).`;
+  return null;
+}
+
 saveBtn.addEventListener('click', async () => {
   const val = parseFloat(amountInput.value);
-  if(isNaN(val) || val <= 0){
-    statusEl.textContent = t('enterAmount');
-    return;
-  }
+  if(isNaN(val) || val <= 0){ statusEl.textContent = t('enterAmount'); statusEl.classList.add('warn'); return; }
   const entries = accountEntries();
   entries[selectedDate] = {
-    amount: val,
-    note: noteInput.value.trim(),
-    category: categorySelect.value,
-    recurring: recurringCheck.checked
+    amount: val, note: noteInput.value.trim(), category: categorySelect.value, recurring: recurringCheck.checked
   };
-
   if(recurringCheck.checked){
     const [y,m,d] = selectedDate.split('-').map(Number);
     for(let i=1;i<=6;i++){
       const futureDate = new Date(y, m-1+i, d);
       const fKey = fmtKey(futureDate.getFullYear(), futureDate.getMonth(), futureDate.getDate());
-      if(!entries[fKey]){
-        entries[fKey] = { amount: val, note: noteInput.value.trim(), category: categorySelect.value, recurring: true };
-      }
+      if(!entries[fKey]) entries[fKey] = { amount: val, note: noteInput.value.trim(), category: categorySelect.value, recurring: true };
     }
   }
-
   await persist();
-  statusEl.textContent = t('saved');
+  const anomaly = checkAnomaly(val, selectedDate);
+  statusEl.textContent = anomaly ? `${t('saved')} ${anomaly}` : t('saved');
+  statusEl.classList.toggle('warn', !!anomaly);
   deleteBtn.style.display = 'inline-block';
   render();
 });
@@ -1081,10 +1364,8 @@ deleteBtn.addEventListener('click', async () => {
   lastDeleted = { account: state.currentAccount, key: selectedDate, value: entries[selectedDate] };
   delete entries[selectedDate];
   await persist();
-  panel.style.display = 'none';
-  selectedDate = null;
-  render();
-  showUndo();
+  panel.style.display = 'none'; selectedDate = null;
+  render(); showUndo();
 });
 
 function showUndo(){
@@ -1097,25 +1378,13 @@ undoBtn.addEventListener('click', async () => {
   if(lastDeleted){
     if(!state.entries[lastDeleted.account]) state.entries[lastDeleted.account] = {};
     state.entries[lastDeleted.account][lastDeleted.key] = lastDeleted.value;
-    await persist();
-    lastDeleted = null;
-    render();
+    await persist(); lastDeleted = null; render();
   }
   undoToast.classList.add('hidden');
 });
 
-el('prevMonth').addEventListener('click', () => {
-  current.setMonth(current.getMonth() - 1);
-  panel.style.display = 'none';
-  selectedDate = null;
-  render();
-});
-el('nextMonth').addEventListener('click', () => {
-  current.setMonth(current.getMonth() + 1);
-  panel.style.display = 'none';
-  selectedDate = null;
-  render();
-});
+el('prevMonth').addEventListener('click', () => { current.setMonth(current.getMonth() - 1); panel.style.display = 'none'; selectedDate = null; render(); });
+el('nextMonth').addEventListener('click', () => { current.setMonth(current.getMonth() + 1); panel.style.display = 'none'; selectedDate = null; render(); });
 document.addEventListener('keydown', (e) => {
   if(document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
   if(e.key === 'ArrowLeft') el('prevMonth').click();
@@ -1124,68 +1393,101 @@ document.addEventListener('keydown', (e) => {
 
 el('yearViewBtn').addEventListener('click', () => {
   const showingYear = yearView.style.display !== 'none';
-  if(showingYear){
-    yearView.style.display = 'none';
-    monthView.style.display = 'block';
-  }else{
-    renderYearView();
-    yearView.style.display = 'block';
-    monthView.style.display = 'none';
-  }
+  if(showingYear){ yearView.style.display = 'none'; monthView.style.display = 'block'; }
+  else{ renderYearView(); yearView.style.display = 'block'; monthView.style.display = 'none'; }
 });
 
-accountSelect.addEventListener('change', () => {
+accountSelect.addEventListener('change', async () => {
   state.currentAccount = accountSelect.value;
-  panel.style.display = 'none';
-  selectedDate = null;
-  persist();
-  checkReminder();
-  render();
+  panel.style.display = 'none'; selectedDate = null;
+  await syncSharedAccountIfNeeded();
+  populateCurrencySelects();
+  persist(); checkReminder(); render();
 });
 el('addAccountBtn').addEventListener('click', async () => {
   const name = prompt(t('addAccountPrompt'));
   if(name && !state.accounts.includes(name)){
     state.accounts.push(name);
     state.currentAccount = name;
+    const wantsShared = confirm(t('addAccountSharedConfirm'));
+    state.accountShared[name] = wantsShared;
     populateAccountSelect();
+    populateCurrencySelects();
+    await syncSharedAccountIfNeeded();
     await persist();
     render();
   }
 });
 
 currencySelect.addEventListener('change', async () => {
-  state.currency = currencySelect.value;
-  await persist();
-  render();
+  state.accountCurrency[state.currentAccount] = currencySelect.value;
+  await persist(); render();
+});
+homeCurrencySelect.addEventListener('change', async () => {
+  state.currency = homeCurrencySelect.value;
+  await persist(); render();
+});
+exchangeRateInput.addEventListener('change', async () => {
+  const val = parseFloat(exchangeRateInput.value);
+  state.accountExchangeRate[state.currentAccount] = isNaN(val) ? null : val;
+  await persist(); render();
+});
+sharedCheck.addEventListener('change', async () => {
+  const name = state.currentAccount;
+  if(sharedCheck.checked){
+    const confirmed = confirm(t('sharedWarning'));
+    if(!confirmed){ sharedCheck.checked = false; return; }
+  }
+  state.accountShared[name] = sharedCheck.checked;
+  populateAccountSelect();
+  await syncSharedAccountIfNeeded();
+  await persist(); render();
 });
 
 languageSelect.addEventListener('change', async () => {
   state.language = languageSelect.value;
-  applyStaticTranslations();
-  renderDow();
-  checkReminder();
-  await persist();
-  render();
+  applyStaticTranslations(); renderDow(); checkReminder(); checkBackupReminder();
+  await persist(); render();
 });
-
-el('darkToggle').addEventListener('click', async () => {
-  state.darkMode = !state.darkMode;
-  applyTheme();
+el('darkToggle').addEventListener('click', async () => { state.darkMode = !state.darkMode; applyTheme(); await persist(); renderChart(); });
+el('settingsBtn').addEventListener('click', () => {
+  settingsPanel.classList.toggle('open');
+  if(settingsPanel.classList.contains('open')){
+    populateCurrencySelects();
+    sharedCheck.checked = !!state.accountShared[state.currentAccount];
+    el('pinStatusText').textContent = state.pin ? t('pinStatusOn') : t('pinStatusOff');
+    el('setPinBtn').style.display = state.pin ? 'none' : 'inline-block';
+    el('removePinBtn').style.display = state.pin ? 'inline-block' : 'none';
+    updateLastBackupText();
+    renderCategoryManager();
+  }
+});
+el('setPinBtn').addEventListener('click', async () => {
+  const pin = prompt(t('pinPromptNew'));
+  if(pin && pin.length >= 4){
+    state.pin = pin;
+    await persist();
+    applyStaticTranslations();
+    alert(t('pinSet'));
+  }
+});
+el('removePinBtn').addEventListener('click', async () => {
+  state.pin = null;
   await persist();
-  renderChart();
+  applyStaticTranslations();
+  alert(t('pinRemoved'));
 });
 
 budgetInput.addEventListener('change', async () => {
   const val = parseFloat(budgetInput.value);
   state.budgets[state.currentAccount] = isNaN(val) ? 0 : val;
-  await persist();
-  renderBudget();
+  await persist(); renderBudget();
 });
 
 searchInput.addEventListener('input', renderList);
 sortSelect.addEventListener('change', renderList);
-
 el('dismissBanner').addEventListener('click', () => reminderBanner.classList.add('hide'));
+el('dismissBackupBanner').addEventListener('click', () => el('backupReminderBanner').classList.add('hide'));
 
 el('exportCsvBtn').addEventListener('click', () => {
   const entries = accountEntries();
@@ -1195,20 +1497,18 @@ el('exportCsvBtn').addEventListener('click', () => {
     csv += `${k},${e.amount},${e.category||''},"${(e.note||'').replace(/"/g,'""')}",${e.recurring?'yes':'no'}\n`;
   });
   const blob = new Blob([csv], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${state.currentAccount}-withdrawals.csv`;
-  a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `${state.currentAccount}-withdrawals.csv`; a.click();
 });
-
-el('backupBtn').addEventListener('click', () => {
+el('backupBtn').addEventListener('click', async () => {
   const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'withdrawal-ledger-backup.json';
-  a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'withdrawal-ledger-backup.json'; a.click();
+  state.lastBackupDate = new Date().toISOString();
+  await persist();
+  updateLastBackupText();
+  checkBackupReminder();
 });
-
 el('restoreInput').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if(!file) return;
@@ -1217,23 +1517,16 @@ el('restoreInput').addEventListener('change', (e) => {
     try{
       const parsed = JSON.parse(ev.target.result);
       state = Object.assign(state, parsed);
-      populateAccountSelect();
-      populateCategorySelect();
-      currencySelect.value = state.currency;
+      populateAccountSelect(); populateCategorySelect(); populateCurrencySelects();
       languageSelect.value = state.language;
-      applyTheme();
-      applyStaticTranslations();
-      renderDow();
-      await persist();
-      render();
+      applyTheme(); applyStaticTranslations(); renderDow();
+      await syncSharedAccountIfNeeded();
+      await persist(); render();
       alert(t('backupRestored'));
-    }catch(err){
-      alert(t('backupInvalid'));
-    }
+    }catch(err){ alert(t('backupInvalid')); }
   };
   reader.readAsText(file);
 });
-
 el('pasteImportBtn').addEventListener('click', async () => {
   const lines = el('pasteImport').value.split('\n').map(l=>l.trim()).filter(Boolean);
   const entries = accountEntries();
@@ -1244,26 +1537,184 @@ el('pasteImportBtn').addEventListener('click', async () => {
     const [date, amountStr, category, ...noteParts] = parts;
     const amount = parseFloat(amountStr);
     if(!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(amount)) return;
-    entries[date] = {
-      amount: amount,
-      category: category || 'Other',
-      note: noteParts.join(', ') || '',
-      recurring: false
-    };
+    entries[date] = { amount: amount, category: category || 'Other', note: noteParts.join(', ') || '', recurring: false };
     count++;
   });
   if(count > 0){
-    await persist();
-    el('pasteImport').value = '';
-    render();
-    statusEl.textContent = '';
+    await persist(); el('pasteImport').value = ''; render(); statusEl.textContent = '';
     alert(importSuccessSentence(count));
-  }else{
-    alert(t('importFail'));
+  }else{ alert(t('importFail')); }
+});
+
+const quickAddFab = el('quickAddFab');
+const quickAddCard = el('quickAddCard');
+const quickAddInput = el('quickAddInput');
+quickAddFab.addEventListener('click', () => {
+  quickAddCard.classList.toggle('open');
+  if(quickAddCard.classList.contains('open')) quickAddInput.focus();
+});
+el('quickAddSubmit').addEventListener('click', async () => {
+  const raw = quickAddInput.value.trim();
+  if(!raw) return;
+  const tokens = raw.split(/\s+/);
+  const amount = parseFloat(tokens[0]);
+  if(isNaN(amount) || amount <= 0){
+    el('quickAddConfirm').textContent = t('enterAmount');
+    return;
   }
+  const rest = tokens.slice(1);
+  let category = 'Other'; let noteTokens = rest;
+  if(rest.length > 0){
+    const match = state.categories.find(c => c.toLowerCase() === rest[0].toLowerCase());
+    if(match){ category = match; noteTokens = rest.slice(1); }
+  }
+  const today = new Date();
+  const key = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
+  const entries = accountEntries();
+  entries[key] = { amount: amount, note: noteTokens.join(' '), category: category, recurring: false };
+  await persist();
+  el('quickAddConfirm').textContent = t('quickAddAdded');
+  quickAddInput.value = '';
+  render();
+  setTimeout(() => { quickAddCard.classList.remove('open'); el('quickAddConfirm').textContent = ''; }, 1200);
+});
+quickAddInput.addEventListener('keydown', e => { if(e.key === 'Enter') el('quickAddSubmit').click(); });
+
+function renderCategoryManager(){
+  const container = el('categoryManagerList');
+  container.innerHTML = '';
+  state.categories.forEach(cat => {
+    const row = document.createElement('div');
+    row.className = 'settings-row';
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'st-label';
+    nameSpan.style.display = 'flex'; nameSpan.style.alignItems = 'center'; nameSpan.style.gap = '6px';
+    const dot = document.createElement('span');
+    dot.className = 'cat-dot';
+    dot.style.background = getCatColor(cat);
+    nameSpan.appendChild(dot);
+    nameSpan.appendChild(document.createTextNode(cat));
+    row.appendChild(nameSpan);
+
+    const btnWrap = document.createElement('div');
+    btnWrap.style.display = 'flex'; btnWrap.style.gap = '6px';
+    const renameBtn = document.createElement('button');
+    renameBtn.className = 'icon-toggle'; renameBtn.textContent = t('renameCategory');
+    renameBtn.addEventListener('click', () => renameCategory(cat));
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'icon-toggle'; removeBtn.textContent = t('removeCategory');
+    if(cat === 'Other'){ removeBtn.disabled = true; removeBtn.style.opacity = '0.4'; }
+    removeBtn.addEventListener('click', () => removeCategory(cat));
+    btnWrap.appendChild(renameBtn); btnWrap.appendChild(removeBtn);
+    row.appendChild(btnWrap);
+    container.appendChild(row);
+  });
+}
+
+async function renameCategory(oldName){
+  const newName = prompt(t('renameCategoryPrompt'), oldName);
+  if(!newName || newName === oldName || state.categories.includes(newName)) return;
+  state.categories = state.categories.map(c => c === oldName ? newName : c);
+  if(state.categoryColors && state.categoryColors[oldName]){
+    state.categoryColors[newName] = state.categoryColors[oldName];
+    delete state.categoryColors[oldName];
+  }
+  Object.keys(state.entries).forEach(acc => {
+    Object.keys(state.entries[acc]).forEach(k => {
+      if(state.entries[acc][k].category === oldName) state.entries[acc][k].category = newName;
+    });
+  });
+  populateCategorySelect();
+  renderCategoryManager();
+  await persist();
+  render();
+}
+
+async function removeCategory(name){
+  if(name === 'Other') return;
+  if(!confirm(t('removeCategoryConfirm'))) return;
+  state.categories = state.categories.filter(c => c !== name);
+  Object.keys(state.entries).forEach(acc => {
+    Object.keys(state.entries[acc]).forEach(k => {
+      if(state.entries[acc][k].category === name) state.entries[acc][k].category = 'Other';
+    });
+  });
+  populateCategorySelect();
+  renderCategoryManager();
+  await persist();
+  render();
+}
+
+el('addCategoryBtn').addEventListener('click', async () => {
+  const input = el('newCategoryInput');
+  const name = input.value.trim();
+  if(!name || state.categories.includes(name)){ input.value = ''; return; }
+  state.categories.push(name);
+  input.value = '';
+  populateCategorySelect();
+  renderCategoryManager();
+  await persist();
+});
+el('newCategoryInput').addEventListener('keydown', e => { if(e.key === 'Enter') el('addCategoryBtn').click(); });
+
+let onboardingIndex = 0;
+function onboardingSteps(){
+  return [
+    {title:t('obStep1Title'), text:t('obStep1Text')},
+    {title:t('obStep2Title'), text:t('obStep2Text')},
+    {title:t('obStep3Title'), text:t('obStep3Text')},
+    {title:t('obStep4Title'), text:t('obStep4Text')},
+    {title:t('obStep5Title'), text:t('obStep5Text')}
+  ];
+}
+function showOnboardingStep(){
+  const steps = onboardingSteps();
+  const s = steps[onboardingIndex];
+  el('onboardingTitle').textContent = s.title;
+  el('onboardingText').textContent = s.text;
+  el('onboardingNext').textContent = onboardingIndex === steps.length - 1 ? t('obDone') : t('obNext');
+  el('onboardingSkip').textContent = t('obSkip');
+  el('onboardingDots').textContent = `${onboardingIndex + 1} / ${steps.length}`;
+}
+function startOnboarding(){
+  onboardingIndex = 0;
+  showOnboardingStep();
+  el('onboardingScreen').classList.add('open');
+}
+async function endOnboarding(){
+  el('onboardingScreen').classList.remove('open');
+  state.hasSeenOnboarding = true;
+  await persist();
+}
+el('onboardingNext').addEventListener('click', () => {
+  const steps = onboardingSteps();
+  if(onboardingIndex < steps.length - 1){ onboardingIndex++; showOnboardingStep(); }
+  else endOnboarding();
+});
+el('onboardingSkip').addEventListener('click', endOnboarding);
+
+el('replayTourBtn').addEventListener('click', () => {
+  settingsPanel.classList.remove('open');
+  startOnboarding();
+});
+
+el('resetDataBtn').addEventListener('click', async () => {
+  if(!confirm(t('resetDataConfirm'))) return;
+  const name = state.currentAccount;
+  state.entries[name] = {};
+  state.budgets[name] = 0;
+  delete state.accountCurrency[name];
+  delete state.accountExchangeRate[name];
+  if(state.accountShared[name]){
+    try{ await window.storage.set(sharedKeyFor(name), JSON.stringify({}), true); }catch(e){}
+  }
+  await persist();
+  populateCurrencySelects();
+  render();
+  alert(t('resetDataDone'));
 });
 
 loadData();
 </script>
 </body>
-</html>.
+</html>
